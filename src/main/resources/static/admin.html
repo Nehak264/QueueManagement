@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin — Bonafide Dashboard</title>
+  <link rel="stylesheet" href="bonafide_style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <h1>📄 Bonafide Certificate Dashboard</h1>
+    <p>TKIET Warananangar — Admin Panel</p>
+  </div>
+  <div style="text-align:right">
+    <p style="font-weight:600">Prof. A. Patil</p>
+    <p id="live-time"></p>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card blue">
+    <div class="num" id="stat-waiting">0</div>
+    <div class="lbl">Waiting</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="num" id="stat-printing">0</div>
+    <div class="lbl">Serving</div>
+  </div>
+  <div class="stat-card green">
+    <div class="num" id="stat-done">0</div>
+    <div class="lbl">Done Today</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="num">9–11 AM</div>
+    <div class="lbl">Current Slot</div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="container">
+
+  <!-- LEFT — QUEUE LIST -->
+  <div>
+    <div class="box">
+      <h2>📋 Bonafide Queue — Today</h2>
+
+      <!-- queue items loaded from API here -->
+      <div id="queue-list">
+        <p style="color:#999; font-size:13px">Loading queue...</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT — DETAILS + CERTIFICATE PREVIEW -->
+  <div>
+
+    <!-- STUDENT DETAILS FORM -->
+    <div class="box">
+      <h2>👤 Student Details — Auto Filled</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Token Number</label>
+          <input type="text" id="f-token" value="—" readonly />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="text" id="f-date" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Student Full Name</label>
+          <input type="text" id="f-name" value="—" readonly />
+        </div>
+        <div class="form-group">
+          <label>Roll Number</label>
+          <input type="text" id="f-roll" value="—" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Class</label>
+          <input type="text" id="f-class" value="—" readonly />
+        </div>
+        <div class="form-group">
+          <label>Division</label>
+          <input type="text" id="f-div" value="—" readonly />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Purpose</label>
+          <input type="text" id="f-purpose" value="—" readonly />
+        </div>
+        <div class="form-group">
+          <label>Time Slot</label>
+          <input type="text" id="f-slot" value="—" readonly />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Academic Year</label>
+        <input type="text" id="f-year" value="2025 – 2026" />
+      </div>
+
+      <div class="form-group">
+        <label>Extra Note (optional)</label>
+        <input type="text" id="f-note" placeholder="Leave blank if none" />
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="generateCert()">
+          ⚡ Generate Certificate
+        </button>
+        <button class="btn btn-orange" onclick="skipStudent()">
+          ⏭ Skip Student
+        </button>
+      </div>
+    </div>
+
+    <!-- CERTIFICATE PREVIEW -->
+    <div class="box">
+      <h2>🖨️ Certificate Preview</h2>
+
+      <div class="preview-wrap">
+        <div class="preview-label">
+          <span>BONAFIDE CERTIFICATE — PRINT PREVIEW</span>
+          <div style="display:flex; gap:8px">
+            <button class="btn btn-print" onclick="window.print()" style="padding:5px 14px; font-size:12px">
+              🖨️ Print
+            </button>
+            <button class="btn btn-green" onclick="markDone()" style="padding:5px 14px; font-size:12px">
+              ✓ Mark Done
+            </button>
+          </div>
+        </div>
+
+        <!-- THE ACTUAL CERTIFICATE -->
+        <div id="bonafide-print">
+
+          <div class="cert-header">
+            <div class="college-name">
+              Tatyasaheb Kore Institute of Engineering and Technology
+            </div>
+            <div class="dept">
+              Department of Computer Science and Engineering
+            </div>
+            <div class="address">
+              Warananangar, Tal. Peth, Dist. Kolhapur, Maharashtra – 416113
+            </div>
+            <hr class="cert-divider">
+            <hr class="cert-divider-thin">
+          </div>
+
+          <div class="cert-title">Bonafide Certificate</div>
+
+          <div class="cert-ref" id="cert-ref">
+            Ref. No: TKIET/CSE/BON/2026/— &nbsp;&nbsp; Date:
+            <span id="cert-date"></span>
+          </div>
+
+          <div class="cert-body" id="cert-body">
+            This is to certify that
+            <span class="highlight" id="cert-name">Mr. / Ms. —</span>,
+            bearing Roll Number
+            <span class="highlight" id="cert-roll">—</span>,
+            is a bonafide student of this institute, currently studying in
+            <span class="highlight" id="cert-class">—</span>,
+            Division <span class="highlight" id="cert-div">—</span>,
+            of the Bachelor of Technology program in
+            <span class="highlight">Computer Science and Engineering</span>
+            for the Academic Year
+            <span class="highlight" id="cert-year">2025 – 2026</span>.
+            <br><br>
+            This certificate is issued for the purpose of
+            <span class="highlight" id="cert-purpose">—</span>
+            as requested by the student.
+            <br><br>
+            <span id="cert-note-line"></span>
+          </div>
+
+          <div class="cert-footer">
+            <div class="sign-block">
+              <div class="sign-line"></div>
+              <div>Class Teacher</div>
+            </div>
+            <div class="sign-block">
+              <div class="sign-line"></div>
+              <div>Head of Department</div>
+              <div style="font-size:12px; color:#555">CSE Department</div>
+            </div>
+            <div class="sign-block">
+              <div class="sign-line"></div>
+              <div><strong>Principal</strong></div>
+              <div style="font-size:12px; color:#555">TKIET Warananangar</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  QMS Admin Panel · TKIET Warananangar · CSE Dept · Academic Year 2025–26
+</div>
+
+<script>
+
+  // ── Config ──
+  const BASE_URL     = "http://localhost:8080";
+  let currentTokenId = null;   // which token is selected
+  let currentSlotId  = 1;      // bonafide slot id in DB
+
+  // ── Live clock ──
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('live-time').textContent =
+      now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) +
+      ' · ' + now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // ── Set today's date in certificate ──
+  function setDate() {
+    const now = new Date();
+    const d = now.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+    document.getElementById('f-date').value = d;
+    document.getElementById('cert-date').textContent = d;
+  }
+  setDate();
+
+  // ── Load Queue from API ──
+  async function loadQueue() {
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin/queue?slotId=${currentSlotId}`);
+      const tokens = await response.json();
+
+      const container = document.getElementById('queue-list');
+
+      if (tokens.length === 0) {
+        container.innerHTML = '<p style="color:#999; font-size:13px">No tokens in queue yet.</p>';
+        return;
+      }
+
+      container.innerHTML = tokens.map(token => `
+        <div class="queue-item ${token.status === 'DONE' || token.status === 'SKIPPED' ? 'done' : ''}"
+             onclick="selectToken(${token.id}, '${token.student.name}', '${token.student.rollNumber}',
+                      '${token.student.className}', '${token.student.division}',
+                      '${token.purpose}', ${token.tokenNumber}, event)">
+
+          <div class="token-num"
+               style="${token.status === 'DONE' || token.status === 'SKIPPED' ? 'background:#888' : ''}">
+            #${token.tokenNumber}
+          </div>
+
+          <div class="student-info">
+            <div class="name">${token.student.name}</div>
+            <div class="meta">
+              Roll: ${token.student.rollNumber} ·
+              ${token.student.className}-${token.student.division} ·
+              ${token.purpose}
+            </div>
+          </div>
+
+          <span class="status-badge ${getStatusClass(token.status)}">
+            ${token.status}
+          </span>
+        </div>
+      `).join('');
+
+    } catch (error) {
+      console.error('Failed to load queue:', error);
+      document.getElementById('queue-list').innerHTML =
+        '<p style="color:red; font-size:13px">Could not load queue. Is the server running?</p>';
+    }
+  }
+
+  // ── Map status to CSS class ──
+  function getStatusClass(status) {
+    const map = {
+      'WAITING':   'waiting',
+      'SERVING':   'printing',
+      'DONE':      'done',
+      'SKIPPED':   'done',
+      'CANCELLED': 'done'
+    };
+    return map[status] || 'waiting';
+  }
+
+  // ── Select a token from queue — fills form + cert preview ──
+  function selectToken(tokenId, name, roll, cls, div, purpose, tokenNumber, event) {
+    currentTokenId = tokenId;
+
+    // highlight selected row
+    document.querySelectorAll('.queue-item').forEach(i => i.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+
+    // fill form
+    document.getElementById('f-token').value   = '#' + tokenNumber;
+    document.getElementById('f-name').value    = name;
+    document.getElementById('f-roll').value    = roll;
+    document.getElementById('f-class').value   = cls;
+    document.getElementById('f-div').value     = div;
+    document.getElementById('f-purpose').value = purpose;
+    document.getElementById('f-slot').value    = '9:00 AM – 11:00 AM';
+    document.getElementById('f-note').value    = '';
+
+    // update cert ref number
+    document.getElementById('cert-ref').innerHTML =
+      'Ref. No: TKIET/CSE/BON/2026/0' + tokenNumber +
+      ' &nbsp;&nbsp; Date: <span id="cert-date">' +
+      document.getElementById('f-date').value + '</span>';
+
+    generateCert();
+  }
+
+  // ── Generate Certificate preview from form values ──
+  function generateCert() {
+    const name    = document.getElementById('f-name').value;
+    const roll    = document.getElementById('f-roll').value;
+    const cls     = document.getElementById('f-class').value;
+    const div     = document.getElementById('f-div').value;
+    const purpose = document.getElementById('f-purpose').value;
+    const year    = document.getElementById('f-year').value;
+    const note    = document.getElementById('f-note').value;
+
+    const classMap = {
+      'FE': 'First Year (FE)',
+      'SE': 'Second Year (SE)',
+      'TE': 'Third Year (TE)',
+      'BE': 'Fourth Year (BE)'
+    };
+
+    document.getElementById('cert-name').textContent    = 'Mr. / Ms. ' + name;
+    document.getElementById('cert-roll').textContent    = roll;
+    document.getElementById('cert-class').textContent   = classMap[cls] || cls;
+    document.getElementById('cert-div').textContent     = div;
+    document.getElementById('cert-purpose').textContent = purpose;
+    document.getElementById('cert-year').textContent    = year;
+
+    const noteLine = document.getElementById('cert-note-line');
+    noteLine.innerHTML = note.trim() !== '' ? '<em>Note: ' + note + '</em>' : '';
+  }
+
+  // ── Mark Done — calls API ──
+  async function markDone() {
+    if (!currentTokenId) {
+      alert('Please select a student from the queue first.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin/done?tokenId=${currentTokenId}`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        alert('Failed to mark as done.');
+        return;
+      }
+
+      currentTokenId = null;
+      await loadQueue();
+      await loadStats();
+
+    } catch (error) {
+      console.error('Error marking done:', error);
+      alert('Could not connect to server.');
+    }
+  }
+
+  // ── Skip Student — calls API ──
+  async function skipStudent() {
+    if (!currentTokenId) {
+      alert('Please select a student from the queue first.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin/skip?tokenId=${currentTokenId}`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) {
+        alert('Failed to skip student.');
+        return;
+      }
+
+      currentTokenId = null;
+      await loadQueue();
+      await loadStats();
+
+    } catch (error) {
+      console.error('Error skipping:', error);
+      alert('Could not connect to server.');
+    }
+  }
+
+  // ── Load Stats — calls API ──
+  async function loadStats() {
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin/stats`);
+      const stats = await response.json();
+
+      document.getElementById('stat-waiting').textContent  = stats.waiting  || 0;
+      document.getElementById('stat-done').textContent     = stats.done     || 0;
+      document.getElementById('stat-printing').textContent = stats.serving  || 0;
+
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  }
+
+  // ── On page load ──
+  loadQueue();
+  loadStats();
+
+  // ── Auto refresh every 30 seconds ──
+  setInterval(() => {
+    loadQueue();
+    loadStats();
+  }, 30000);
+
+</script>
+
+</body>
+</html>

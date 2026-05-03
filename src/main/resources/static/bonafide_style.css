@@ -1,0 +1,308 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+  color: #333;
+}
+
+/* ── NAVBAR ── */
+.navbar {
+  background: #1a73e8;
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.navbar h1 { font-size: 18px; }
+.navbar p  { font-size: 12px; opacity: 0.85; }
+
+/* ── LAYOUT ── */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ── BOX ── */
+.box {
+  background: white;
+  border-radius: 10px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.box h2 {
+  font-size: 15px;
+  color: #1a73e8;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e8f0fe;
+}
+
+/* ── QUEUE LIST ── */
+.queue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.queue-item:hover    { border-color: #1a73e8; background: #f0f6ff; }
+.queue-item.selected { border-color: #1a73e8; background: #e8f0fe; }
+.queue-item.done     { opacity: 0.5; }
+
+.queue-item .token-num {
+  background: #1a73e8;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.queue-item .student-info { flex: 1; padding: 0 12px; }
+.queue-item .student-info .name { font-weight: 600; font-size: 14px; }
+.queue-item .student-info .meta { font-size: 11px; color: #777; margin-top: 2px; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.waiting  { background: #fff3cd; color: #856404; }
+.status-badge.ready    { background: #d4edda; color: #155724; }
+.status-badge.done     { background: #e2e3e5; color: #555; }
+.status-badge.printing { background: #cfe2ff; color: #084298; }
+
+/* ── FORM ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 9px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  outline: none;
+  transition: border 0.2s;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus { border-color: #1a73e8; }
+
+.form-group input[readonly] { background: #f8f9fa; color: #555; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover     { opacity: 0.88; }
+.btn-blue      { background: #1a73e8; color: white; }
+.btn-green     { background: #28a745; color: white; }
+.btn-orange    { background: #f5a623; color: white; }
+.btn-red       { background: #e84455; color: white; }
+.btn-outline   { background: white; color: #1a73e8; border: 1.5px solid #1a73e8; }
+.btn-print     { background: #6f42c1; color: white; }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* ── PREVIEW BOX ── */
+.preview-wrap {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preview-label {
+  background: #f8f9fa;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #777;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── BONAFIDE CERTIFICATE (print area) ── */
+#bonafide-print {
+  padding: 32px 36px;
+  font-family: 'Times New Roman', serif;
+  font-size: 14px;
+  line-height: 1.7;
+  background: white;
+  min-height: 400px;
+}
+
+.cert-header { text-align: center; margin-bottom: 20px; }
+
+.cert-header .college-name {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cert-header .dept {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.cert-header .address {
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.cert-divider {
+  border: none;
+  border-top: 2px solid #333;
+  margin: 10px 0 4px;
+}
+
+.cert-divider-thin {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 2px 0 16px;
+}
+
+.cert-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.cert-body { text-align: justify; margin-bottom: 24px; }
+.cert-body .highlight { font-weight: 700; }
+
+.cert-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  font-size: 13px;
+}
+
+.cert-footer .sign-block { text-align: center; }
+.cert-footer .sign-block .sign-line {
+  width: 160px;
+  border-top: 1px solid #333;
+  margin: 40px auto 4px;
+}
+
+.cert-ref {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  body * { visibility: hidden; }
+  #bonafide-print, #bonafide-print * { visibility: visible; }
+  #bonafide-print {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    padding: 40px 60px;
+    font-size: 15px;
+  }
+}
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  padding: 0 24px 0;
+  max-width: 1200px;
+  margin: 20px auto 0;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.stat-card .num {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.stat-card .lbl { font-size: 11px; color: #777; }
+.stat-card.blue  .num { color: #1a73e8; }
+.stat-card.green .num { color: #28a745; }
+.stat-card.orange .num { color: #f5a623; }
+.stat-card.purple .num { color: #6f42c1; }
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: #999;
+}

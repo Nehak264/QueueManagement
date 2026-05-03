@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QMS Student Portal</title>
+  <link rel="stylesheet" href="student_style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <h1>🎫 QMS Student Portal</h1>
+    <p>TKIET Warananangar — CSE Department</p>
+  </div>
+  <div style="text-align:right">
+    <p style="font-weight:600">Rahul Patil</p>
+    <p>Roll No: 2201234 | SE-B</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOKEN RESULT -->
+  <div class="token-result" id="tokenResult">
+    <p>✅ Your token has been booked!</p>
+    <div class="big-token" id="tokenNumber">#—</div>
+    <p id="tokenCounter"></p>
+    <p id="tokenSlot"></p>
+
+    <div class="info-row">
+      <div class="info-box">
+        <div class="val" id="tokenAhead">—</div>
+        <div class="lbl">ahead of you</div>
+      </div>
+      <div class="info-box">
+        <div class="val" id="tokenWait">—</div>
+        <div class="lbl">est. wait</div>
+      </div>
+      <div class="info-box">
+        <div class="val" id="tokenServing">—</div>
+        <div class="lbl">now serving</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('bonafide', this)">📄 Bonafide Certificate</button>
+    <button class="tab" onclick="switchTab('fees', this)">💰 Fees Submission</button>
+  </div>
+
+  <!-- BONAFIDE SECTION -->
+  <div class="section active" id="section-bonafide">
+    <div class="box">
+      <h2>📅 Select Time Slot — Bonafide</h2>
+      <div class="slots-grid" id="bonafide-slots">
+        <p>Loading slots...</p>
+      </div>
+
+      <p id="bonafide-slot-error" style="color:red"></p>
+
+      <div id="bonafide-form" style="display:none">
+        <hr>
+        <h3>📝 Bonafide Request Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="studentName" value="Rahul Patil">
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="rollNumber" value="2201234">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Class / Division</label>
+            <input type="text" id="classDivision" value="SE-B">
+          </div>
+          <div class="form-group">
+            <label>Purpose</label>
+            <select id="bonafide-purpose">
+              <option>Bank Account Opening</option>
+              <option>Passport Application</option>
+              <option>Scholarship Form</option>
+              <option>Visa Application</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Additional Note</label>
+          <textarea id="bonafide-note"></textarea>
+        </div>
+
+        <button onclick="submitRequest('bonafide')">🎫 Book Token</button>
+        <button onclick="cancelForm('bonafide')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEES SECTION -->
+  <div class="section" id="section-fees">
+    <div class="box">
+      <h2>📅 Select Time Slot — Fees Submission</h2>
+      <div class="slots-grid" id="fees-slots">
+        <p>Loading slots...</p>
+      </div>
+
+      <p id="fees-slot-error" style="color:red"></p>
+
+      <div id="fees-form" style="display:none">
+        <hr>
+        <h3>📝 Fees Submission Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="feesStudentName" value="Rahul Patil">
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="feesRollNumber" value="2201234">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fees Type</label>
+            <select id="fees-type">
+              <option>Tuition Fees</option>
+              <option>Exam Fees</option>
+              <option>Library Fees</option>
+              <option>Development Fees</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount</label>
+            <input type="number" id="fees-amount">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select id="fees-payment-mode">
+              <option>Cash</option>
+              <option>Online / UPI</option>
+              <option>DD</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reference No</label>
+            <input type="text" id="fees-ref">
+          </div>
+        </div>
+
+        <button onclick="submitRequest('fees')">🎫 Book Token</button>
+        <button onclick="cancelForm('fees')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY REQUESTS -->
+  <div class="box">
+    <h2>📋 My Requests</h2>
+    <div id="my-requests-list">
+      <p>Loading...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE_URL = "http://localhost:8080";
+  const STUDENT_ID = 1;
+  let selectedSlot = { bonafide: null, fees: null };
+  let selectedSlotId = { bonafide: null, fees: null };
+
+  function switchTab(type, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-' + type).classList.add('active');
+  }
+
+  async function loadSlots() {
+    await loadSlotsForCounter(1, 'bonafide-slots', 'bonafide');
+    await loadSlotsForCounter(2, 'fees-slots', 'fees');
+  }
+
+  async function loadSlotsForCounter(counterId, gridId, type) {
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
+      const slots = await response.json();
+
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = '';
+
+      slots.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'slot';
+        div.innerHTML = `
+          <div>${slot.startTime} - ${slot.endTime}</div>
+          <div>${slot.bookedCount}/${slot.maxCapacity}</div>
+        `;
+
+        div.onclick = () => selectSlot(div, type, slot.id);
+        grid.appendChild(div);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function selectSlot(el, type, slotId) {
+    selectedSlotId[type] = slotId;
+    document.getElementById(type + '-form').style.display = 'block';
+  }
+
+  function cancelForm(type) {
+    document.getElementById(type + '-form').style.display = 'none';
+    selectedSlotId[type] = null;
+  }
+
+  async function submitRequest(type) {
+    if (!selectedSlotId[type]) {
+      alert('Please select slot');
+      return;
+    }
+
+    const purpose = type === 'bonafide'
+      ? document.getElementById('bonafide-purpose').value
+      : document.getElementById('fees-type').value;
+
+    const rollNumber = type === 'bonafide'
+      ? document.getElementById('rollNumber').value
+      : document.getElementById('feesRollNumber').value;
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rollNumber: rollNumber,
+          slotId: selectedSlotId[type],
+          purpose: purpose
+        })
+      });
+
+      const token = await response.json();
+      document.getElementById('tokenNumber').textContent = '#' + token.tokenNumber;
+      document.getElementById('tokenResult').style.display = 'block';
+
+      loadSlots();
+      loadMyRequests();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function loadMyRequests() {
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
+      const tokens = await response.json();
+
+      const container = document.getElementById('my-requests-list');
+      container.innerHTML = '';
+
+      tokens.forEach(token => {
+        container.innerHTML += `
+          <div>
+            #${token.tokenNumber} - ${token.purpose}
+          </div>
+        `;
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  loadSlots();
+  loadMyRequests();
+</script>
+
+</body>
+</html>
