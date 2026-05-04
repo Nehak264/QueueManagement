@@ -1,10 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QMS Student Portal</title>
   <link rel="stylesheet" href="student_style.css">
+  <style>
+    /* Added styles for the OTP verification UI */
+    .otp-container {
+      margin-top: 15px;
+      padding: 12px;
+      background: #fffbe6;
+      border: 1px dashed #ffe58f;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .otp-label {
+      font-size: 11px;
+      color: #856404;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .otp-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #d48806;
+      letter-spacing: 5px;
+    }
+    .otp-small {
+      color: #d48806;
+      font-weight: 700;
+      background: #fffbe6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #ffe58f;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,19 +47,27 @@
     <p>TKIET Warananangar — CSE Department</p>
   </div>
   <div style="text-align:right">
-    <p style="font-weight:600">Rahul Patil</p>
-    <p>Roll No: 2201234 | SE-B</p>
+    <p style="font-weight:600" id="nav-name">Student Portal</p>
+    <p>TKIET Warananangar — CSE Dept</p>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- TOKEN RESULT -->
+  <!-- TOKEN RESULT (Modified with OTP Display) -->
   <div class="token-result" id="tokenResult">
     <p>✅ Your token has been booked!</p>
     <div class="big-token" id="tokenNumber">#—</div>
-    <p id="tokenCounter"></p>
-    <p id="tokenSlot"></p>
+
+    <!-- OTP Display Box -->
+    <div class="otp-container">
+      <div class="otp-label">Counter Verification OTP</div>
+      <div class="otp-value" id="tokenOtp">------</div>
+      <p style="font-size: 11px; color: #856404; margin-top: 5px;">Show this code at the counter for verification.</p>
+    </div>
+
+    <p id="tokenCounter" style="font-weight:600; font-size:14px; margin-top:15px"></p>
+    <p id="tokenSlot" style="color:#777; font-size:13px"></p>
 
     <div class="info-row">
       <div class="info-box">
@@ -47,145 +87,95 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('bonafide', this)">📄 Bonafide Certificate</button>
-    <button class="tab" onclick="switchTab('fees', this)">💰 Fees Submission</button>
+    <button class="tab active" onclick="switchTab('bonafide', this)">
+      📄 Bonafide Certificate
+    </button>
+    <button class="tab" onclick="switchTab('fees', this)">
+      💰 Fees Submission
+    </button>
   </div>
 
-  <!-- BONAFIDE SECTION -->
+  <!-- ══════ BONAFIDE SECTION ══════ -->
   <div class="section active" id="section-bonafide">
+    <div class="timing-banner bonafide">
+      🕘 <strong>Bonafide Counter Hours:</strong>
+      &nbsp;9:00 AM – 11:00 AM &nbsp;and&nbsp; 2:00 PM – 4:00 PM
+    </div>
+
     <div class="box">
       <h2>📅 Select Time Slot — Bonafide</h2>
       <div class="slots-grid" id="bonafide-slots">
-        <p>Loading slots...</p>
+        <p style="color:#999; font-size:13px">Loading slots...</p>
       </div>
-
-      <p id="bonafide-slot-error" style="color:red"></p>
+      <p style="font-size:12px; color:#e84455;" id="bonafide-slot-error"></p>
 
       <div id="bonafide-form" style="display:none">
-        <hr>
+        <hr style="margin: 16px 0; border-color:#f0f0f0">
         <h3>📝 Bonafide Request Details</h3>
-
         <div class="form-row">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="studentName" value="Rahul Patil">
-          </div>
-          <div class="form-group">
-            <label>Roll Number</label>
-            <input type="text" id="rollNumber" value="2201234">
-          </div>
+          <div class="form-group"><label>Full Name</label><input type="text" id="b-name" /></div>
+          <div class="form-group"><label>Roll Number</label><input type="text" id="b-roll" /></div>
         </div>
-
         <div class="form-row">
-          <div class="form-group">
-            <label>Class / Division</label>
-            <input type="text" id="classDivision" value="SE-B">
-          </div>
+          <div class="form-group"><label>Class</label><input type="text" id="b-class" /></div>
           <div class="form-group">
             <label>Purpose</label>
             <select id="bonafide-purpose">
               <option>Bank Account Opening</option>
-              <option>Passport Application</option>
               <option>Scholarship Form</option>
-              <option>Visa Application</option>
-              <option>Other</option>
+              <option>Passport Application</option>
             </select>
           </div>
         </div>
-
-        <div class="form-group">
-          <label>Additional Note</label>
-          <textarea id="bonafide-note"></textarea>
-        </div>
-
-        <button onclick="submitRequest('bonafide')">🎫 Book Token</button>
-        <button onclick="cancelForm('bonafide')">Cancel</button>
+        <button class="btn btn-blue" onclick="submitRequest('bonafide')">🎫 Book Token</button>
       </div>
     </div>
   </div>
 
-  <!-- FEES SECTION -->
+  <!-- ══════ FEES SECTION ══════ -->
   <div class="section" id="section-fees">
+    <div class="timing-banner fees">
+      🕚 <strong>Fees Counter Hours:</strong> 11:00 AM – 2:00 PM
+    </div>
     <div class="box">
-      <h2>📅 Select Time Slot — Fees Submission</h2>
+      <h2>📅 Select Time Slot — Fees</h2>
       <div class="slots-grid" id="fees-slots">
-        <p>Loading slots...</p>
+        <p style="color:#999; font-size:13px">Loading slots...</p>
       </div>
-
-      <p id="fees-slot-error" style="color:red"></p>
-
       <div id="fees-form" style="display:none">
-        <hr>
-        <h3>📝 Fees Submission Details</h3>
-
+        <hr style="margin: 16px 0; border-color:#f0f0f0">
         <div class="form-row">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="feesStudentName" value="Rahul Patil">
-          </div>
-          <div class="form-group">
-            <label>Roll Number</label>
-            <input type="text" id="feesRollNumber" value="2201234">
-          </div>
+          <div class="form-group"><label>Full Name</label><input type="text" id="f-name" /></div>
+          <div class="form-group"><label>Roll Number</label><input type="text" id="f-roll" /></div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Fees Type</label>
-            <select id="fees-type">
-              <option>Tuition Fees</option>
-              <option>Exam Fees</option>
-              <option>Library Fees</option>
-              <option>Development Fees</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Amount</label>
-            <input type="number" id="fees-amount">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Payment Mode</label>
-            <select id="fees-payment-mode">
-              <option>Cash</option>
-              <option>Online / UPI</option>
-              <option>DD</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Reference No</label>
-            <input type="text" id="fees-ref">
-          </div>
-        </div>
-
-        <button onclick="submitRequest('fees')">🎫 Book Token</button>
-        <button onclick="cancelForm('fees')">Cancel</button>
+        <button class="btn btn-blue" onclick="submitRequest('fees')">🎫 Book Token</button>
       </div>
     </div>
   </div>
 
-  <!-- MY REQUESTS -->
+  <!-- MY REQUESTS (Modified to show OTP) -->
   <div class="box">
     <h2>📋 My Requests</h2>
     <div id="my-requests-list">
-      <p>Loading...</p>
+      <p style="color:#999; font-size:13px; padding:12px 0">Loading...</p>
     </div>
+  </div>
+
+  <div class="footer">
+    QMS Student Portal · TKIET Warananangar · CSE Dept
   </div>
 </div>
 
 <script>
-  const BASE_URL = "http://localhost:8080";
+  const BASE_URL   = "http://localhost:8080";
   const STUDENT_ID = 1;
-  let selectedSlot = { bonafide: null, fees: null };
+
   let selectedSlotId = { bonafide: null, fees: null };
+  let selectedSlotLabel = { bonafide: null, fees: null };
 
   function switchTab(type, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-' + type).classList.add('active');
   }
@@ -196,98 +186,81 @@
   }
 
   async function loadSlotsForCounter(counterId, gridId, type) {
-    try {
-      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
-      const slots = await response.json();
-
-      const grid = document.getElementById(gridId);
-      grid.innerHTML = '';
-
-      slots.forEach(slot => {
-        const div = document.createElement('div');
-        div.className = 'slot';
-        div.innerHTML = `
-          <div>${slot.startTime} - ${slot.endTime}</div>
-          <div>${slot.bookedCount}/${slot.maxCapacity}</div>
-        `;
-
-        div.onclick = () => selectSlot(div, type, slot.id);
-        grid.appendChild(div);
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  function selectSlot(el, type, slotId) {
-    selectedSlotId[type] = slotId;
-    document.getElementById(type + '-form').style.display = 'block';
-  }
-
-  function cancelForm(type) {
-    document.getElementById(type + '-form').style.display = 'none';
-    selectedSlotId[type] = null;
+    const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
+    const slots = await response.json();
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    slots.forEach(slot => {
+      const div = document.createElement('div');
+      div.className = 'slot' + (!slot.active || slot.bookedCount >= slot.maxCapacity ? ' disabled' : '');
+      const label = `${slot.startTime.substring(0, 5)} – ${slot.endTime.substring(0, 5)}`;
+      div.innerHTML = `<div>${label}</div><div style="font-size:10px">${slot.bookedCount}/${slot.maxCapacity}</div>`;
+      if (!div.classList.contains('disabled')) {
+        div.onclick = () => {
+          document.querySelectorAll(`#${gridId} .slot`).forEach(s => s.classList.remove('selected'));
+          div.classList.add('selected');
+          selectedSlotId[type] = slot.id;
+          selectedSlotLabel[type] = label;
+          document.getElementById(type + '-form').style.display = 'block';
+        };
+      }
+      grid.appendChild(div);
+    });
   }
 
   async function submitRequest(type) {
-    if (!selectedSlotId[type]) {
-      alert('Please select slot');
-      return;
-    }
+    const roll = document.getElementById(type === 'bonafide' ? 'b-roll' : 'f-roll').value;
+    const name = document.getElementById(type === 'bonafide' ? 'b-name' : 'f-name').value;
 
-    const purpose = type === 'bonafide'
-      ? document.getElementById('bonafide-purpose').value
-      : document.getElementById('fees-type').value;
+    const response = await fetch(`${BASE_URL}/api/student/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rollNumber: roll,
+        slotId: String(selectedSlotId[type]),
+        purpose: type.toUpperCase()
+      })
+    });
 
-    const rollNumber = type === 'bonafide'
-      ? document.getElementById('rollNumber').value
-      : document.getElementById('feesRollNumber').value;
-
-    try {
-      const response = await fetch(`${BASE_URL}/api/student/book`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rollNumber: rollNumber,
-          slotId: selectedSlotId[type],
-          purpose: purpose
-        })
-      });
-
+    if (response.ok) {
       const token = await response.json();
-      document.getElementById('tokenNumber').textContent = '#' + token.tokenNumber;
-      document.getElementById('tokenResult').style.display = 'block';
 
-      loadSlots();
+      // Update UI with Token and OTP
+      document.getElementById('tokenNumber').textContent = '#' + token.tokenNumber;
+      document.getElementById('tokenOtp').textContent = token.otp; // From updated Service
+      document.getElementById('tokenCounter').textContent = type === 'bonafide' ? '📄 Bonafide Counter' : '💰 Fees Counter';
+      document.getElementById('tokenSlot').textContent = 'Time Slot: ' + selectedSlotLabel[type];
+
+      const ahead = Math.max(0, token.tokenNumber - 1);
+      document.getElementById('tokenAhead').textContent = ahead;
+      document.getElementById('tokenWait').textContent = (ahead * 5) + 'm';
+
+      document.getElementById('tokenResult').classList.add('show');
       loadMyRequests();
-    } catch (error) {
-      console.error(error);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   async function loadMyRequests() {
-    try {
-      const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
-      const tokens = await response.json();
+    const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
+    const tokens = await response.json();
+    const container = document.getElementById('my-requests-list');
 
-      const container = document.getElementById('my-requests-list');
-      container.innerHTML = '';
-
-      tokens.forEach(token => {
-        container.innerHTML += `
-          <div>
-            #${token.tokenNumber} - ${token.purpose}
+    container.innerHTML = tokens.map(token => `
+      <div class="request-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee">
+        <div>
+          <strong>#${token.tokenNumber} — ${token.slot.counter.name}</strong>
+          <div style="font-size:11px; color:#777">
+            OTP: <span class="otp-small">${token.otp}</span> &nbsp;·&nbsp; ${token.slot.slotDate}
           </div>
-        `;
-      });
-    } catch (error) {
-      console.error(error);
-    }
+        </div>
+        <span class="req-badge">${token.status}</span>
+      </div>
+    `).join('');
   }
 
   loadSlots();
   loadMyRequests();
 </script>
-
 </body>
 </html>

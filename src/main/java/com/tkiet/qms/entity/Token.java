@@ -1,4 +1,5 @@
 package com.tkiet.qms.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,22 +18,25 @@ public class Token {
     private Long id;
 
     @Column(name = "token_number", nullable = false)
-    private int tokenNumber;       // #47, #48 — generated in service layer
+    private int tokenNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "slot_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private TimeSlot slot;
 
-    private String purpose;        // "Bank Account Opening", "Passport" etc.
+    private String purpose;
 
-    @Enumerated(EnumType.STRING)   // stores "WAITING" not 0,1,2 in DB
+    @Enumerated(EnumType.STRING)
     private TokenStatus status;
 
-    private String otp;            // 4-digit OTP for verification
+    // Added for verification
+    private String otp;
 
     @Column(name = "otp_verified")
     private boolean otpVerified;
@@ -45,5 +49,5 @@ public class Token {
     private LocalDateTime createdAt;
 
     @Column(name = "served_at")
-    private LocalDateTime servedAt;    // set when status → DONE
+    private LocalDateTime servedAt;
 }
