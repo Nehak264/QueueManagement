@@ -66,4 +66,17 @@ public class AdminController {
     public BonafideCertificate getCertificate(@RequestParam Long tokenId) {
         return bonafideService.getCertificate(tokenId);
     }
+    // POST /api/admin/otp/send?tokenId=1
+// generates OTP and saves to token
+    @PostMapping("/otp/send")
+    public Token sendOtp(@RequestParam Long tokenId) {
+        return tokenService.sendOtp(tokenId);
+    }
+
+    // POST /api/admin/otp/verify?tokenId=1&otp=1234
+// verifies OTP entered by admin
+    @PostMapping("/otp/verify")
+    public Token verifyOtp(@RequestParam Long tokenId, @RequestParam String otp) {
+        return tokenService.verifyOtp(tokenId, otp);
+    }
 }

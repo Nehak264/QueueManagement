@@ -10,4 +10,5 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
     // finds all slots for a specific counter on a specific date
     // used in student portal to show available slots
     List<TimeSlot> findByCounterIdAndSlotDate(Long counterId, LocalDate date);
+    List<TimeSlot> findBySlotDate(LocalDate date);
 }

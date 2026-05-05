@@ -35,7 +35,6 @@ public class Token {
     @Enumerated(EnumType.STRING)
     private TokenStatus status;
 
-    // Added for verification
     private String otp;
 
     @Column(name = "otp_verified")

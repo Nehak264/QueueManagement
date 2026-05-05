@@ -4,39 +4,6 @@
   <meta charset="UTF-8">
   <title>QMS Student Portal</title>
   <link rel="stylesheet" href="student_style.css">
-  <style>
-    /* Added styles for the OTP verification UI */
-    .otp-container {
-      margin-top: 15px;
-      padding: 12px;
-      background: #fffbe6;
-      border: 1px dashed #ffe58f;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .otp-label {
-      font-size: 11px;
-      color: #856404;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-    .otp-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: #d48806;
-      letter-spacing: 5px;
-    }
-    .otp-small {
-      color: #d48806;
-      font-weight: 700;
-      background: #fffbe6;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #ffe58f;
-    }
-  </style>
 </head>
 <body>
 
@@ -54,21 +21,12 @@
 
 <div class="container">
 
-  <!-- TOKEN RESULT (Modified with OTP Display) -->
+  <!-- TOKEN RESULT (shown after booking) -->
   <div class="token-result" id="tokenResult">
     <p>✅ Your token has been booked!</p>
     <div class="big-token" id="tokenNumber">#—</div>
-
-    <!-- OTP Display Box -->
-    <div class="otp-container">
-      <div class="otp-label">Counter Verification OTP</div>
-      <div class="otp-value" id="tokenOtp">------</div>
-      <p style="font-size: 11px; color: #856404; margin-top: 5px;">Show this code at the counter for verification.</p>
-    </div>
-
-    <p id="tokenCounter" style="font-weight:600; font-size:14px; margin-top:15px"></p>
+    <p id="tokenCounter" style="font-weight:600; font-size:14px"></p>
     <p id="tokenSlot" style="color:#777; font-size:13px"></p>
-
     <div class="info-row">
       <div class="info-box">
         <div class="val" id="tokenAhead">—</div>
@@ -97,63 +55,175 @@
 
   <!-- ══════ BONAFIDE SECTION ══════ -->
   <div class="section active" id="section-bonafide">
+
     <div class="timing-banner bonafide">
       🕘 <strong>Bonafide Counter Hours:</strong>
       &nbsp;9:00 AM – 11:00 AM &nbsp;and&nbsp; 2:00 PM – 4:00 PM
+      &nbsp;(Mon – Fri)
     </div>
 
     <div class="box">
       <h2>📅 Select Time Slot — Bonafide</h2>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#d4edda; border:1.5px solid #28a745"></div>
+          Available
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#f8f8f8; border:1.5px solid #ccc"></div>
+          Closed / Full
+        </div>
+      </div>
+
       <div class="slots-grid" id="bonafide-slots">
         <p style="color:#999; font-size:13px">Loading slots...</p>
       </div>
-      <p style="font-size:12px; color:#e84455;" id="bonafide-slot-error"></p>
 
+      <p style="font-size:12px; color:#e84455; margin-bottom:14px" id="bonafide-slot-error"></p>
+
+      <!-- BONAFIDE FORM -->
       <div id="bonafide-form" style="display:none">
-        <hr style="margin: 16px 0; border-color:#f0f0f0">
-        <h3>📝 Bonafide Request Details</h3>
+        <hr style="margin-bottom:16px; border-color:#f0f0f0">
+        <h3 style="font-size:14px; margin-bottom:14px">📝 Bonafide Request Details</h3>
+
         <div class="form-row">
-          <div class="form-group"><label>Full Name</label><input type="text" id="b-name" /></div>
-          <div class="form-group"><label>Roll Number</label><input type="text" id="b-roll" /></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Class</label><input type="text" id="b-class" /></div>
           <div class="form-group">
-            <label>Purpose</label>
+            <label>Full Name</label>
+            <input type="text" id="b-name" placeholder="Enter your full name" />
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="b-roll" placeholder="e.g. 2201234" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Class / Division</label>
+            <input type="text" id="b-class" placeholder="e.g. SE – B" />
+          </div>
+          <div class="form-group">
+            <label>Purpose of Bonafide</label>
             <select id="bonafide-purpose">
               <option>Bank Account Opening</option>
-              <option>Scholarship Form</option>
               <option>Passport Application</option>
+              <option>Scholarship Form</option>
+              <option>Visa Application</option>
+              <option>Other</option>
             </select>
           </div>
         </div>
-        <button class="btn btn-blue" onclick="submitRequest('bonafide')">🎫 Book Token</button>
+
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Additional Note (optional)</label>
+          <textarea id="bonafide-note" placeholder="Any special instructions..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px">
+          <button class="btn btn-blue" onclick="submitRequest('bonafide')">
+            🎫 Book Token
+          </button>
+          <button class="btn btn-outline" onclick="cancelForm('bonafide')">
+            Cancel
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- ══════ FEES SECTION ══════ -->
   <div class="section" id="section-fees">
+
     <div class="timing-banner fees">
-      🕚 <strong>Fees Counter Hours:</strong> 11:00 AM – 2:00 PM
+      🕚 <strong>Fees Counter Hours:</strong>
+      &nbsp;11:00 AM – 1:00 PM &nbsp;and&nbsp; 1:00 PM – 2:00 PM
+      &nbsp;(Mon – Sat)
     </div>
+
     <div class="box">
-      <h2>📅 Select Time Slot — Fees</h2>
+      <h2>📅 Select Time Slot — Fees Submission</h2>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#d4edda; border:1.5px solid #28a745"></div>
+          Available
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#f8f8f8; border:1.5px solid #ccc"></div>
+          Closed / Full
+        </div>
+      </div>
+
       <div class="slots-grid" id="fees-slots">
         <p style="color:#999; font-size:13px">Loading slots...</p>
       </div>
+
+      <p style="font-size:12px; color:#e84455; margin-bottom:14px" id="fees-slot-error"></p>
+
+      <!-- FEES FORM -->
       <div id="fees-form" style="display:none">
-        <hr style="margin: 16px 0; border-color:#f0f0f0">
+        <hr style="margin-bottom:16px; border-color:#f0f0f0">
+        <h3 style="font-size:14px; margin-bottom:14px">📝 Fees Submission Details</h3>
+
         <div class="form-row">
-          <div class="form-group"><label>Full Name</label><input type="text" id="f-name" /></div>
-          <div class="form-group"><label>Roll Number</label><input type="text" id="f-roll" /></div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="f-name" placeholder="Enter your full name" />
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="f-roll" placeholder="e.g. 2201234" />
+          </div>
         </div>
-        <button class="btn btn-blue" onclick="submitRequest('fees')">🎫 Book Token</button>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fees Type</label>
+            <select id="fees-type">
+              <option>Tuition Fees</option>
+              <option>Exam Fees</option>
+              <option>Library Fees</option>
+              <option>Development Fees</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="fees-amount" placeholder="Enter amount" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select id="fees-payment-mode">
+              <option>Cash</option>
+              <option>Online / UPI</option>
+              <option>DD (Demand Draft)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reference No (if any)</label>
+            <input type="text" id="fees-ref" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px">
+          <button class="btn btn-blue" onclick="submitRequest('fees')">
+            🎫 Book Token
+          </button>
+          <button class="btn btn-outline" onclick="cancelForm('fees')">
+            Cancel
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 
-  <!-- MY REQUESTS (Modified to show OTP) -->
+  <!-- MY REQUESTS -->
   <div class="box">
     <h2>📋 My Requests</h2>
     <div id="my-requests-list">
@@ -162,22 +232,25 @@
   </div>
 
   <div class="footer">
-    QMS Student Portal · TKIET Warananangar · CSE Dept
+    QMS Student Portal · TKIET Warananangar · CSE Dept · 2025–26
   </div>
+
 </div>
 
 <script>
+
   const BASE_URL   = "http://localhost:8080";
   const STUDENT_ID = 1;
 
+  let selectedSlot   = { bonafide: null, fees: null };
   let selectedSlotId = { bonafide: null, fees: null };
-  let selectedSlotLabel = { bonafide: null, fees: null };
 
   function switchTab(type, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-' + type).classList.add('active');
+    document.getElementById('tokenResult').classList.remove('show');
   }
 
   async function loadSlots() {
@@ -186,81 +259,194 @@
   }
 
   async function loadSlotsForCounter(counterId, gridId, type) {
-    const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
-    const slots = await response.json();
-    const grid = document.getElementById(gridId);
-    grid.innerHTML = '';
-    slots.forEach(slot => {
-      const div = document.createElement('div');
-      div.className = 'slot' + (!slot.active || slot.bookedCount >= slot.maxCapacity ? ' disabled' : '');
-      const label = `${slot.startTime.substring(0, 5)} – ${slot.endTime.substring(0, 5)}`;
-      div.innerHTML = `<div>${label}</div><div style="font-size:10px">${slot.bookedCount}/${slot.maxCapacity}</div>`;
-      if (!div.classList.contains('disabled')) {
-        div.onclick = () => {
-          document.querySelectorAll(`#${gridId} .slot`).forEach(s => s.classList.remove('selected'));
-          div.classList.add('selected');
-          selectedSlotId[type] = slot.id;
-          selectedSlotLabel[type] = label;
-          document.getElementById(type + '-form').style.display = 'block';
-        };
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
+      const slots = await response.json();
+
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = '';
+
+      if (slots.length === 0) {
+        grid.innerHTML = '<p style="color:#999; font-size:13px">No slots available today.</p>';
+        return;
       }
-      grid.appendChild(div);
-    });
+
+      slots.forEach(slot => {
+        const isFull     = slot.bookedCount >= slot.maxCapacity;
+        const isDisabled = !slot.active || isFull;
+
+        const div = document.createElement('div');
+        div.className = 'slot' + (isDisabled ? ' disabled' : '');
+
+        const start = slot.startTime.substring(0, 5);
+        const end   = slot.endTime.substring(0, 5);
+        const label = `${start} – ${end}`;
+
+        div.innerHTML = `
+          <div class="slot-time">${label}</div>
+          <div class="slot-count">${slot.bookedCount} / ${slot.maxCapacity} booked</div>
+          <span class="slot-badge ${isFull ? 'closed' : 'open'}">
+            ${isFull ? 'Full' : 'Open'}
+          </span>
+        `;
+
+        if (!isDisabled) {
+          div.onclick = () => selectSlot(div, type, label, slot.bookedCount, slot.maxCapacity, slot.id);
+        }
+
+        grid.appendChild(div);
+      });
+
+    } catch (error) {
+      console.error('Failed to load slots:', error);
+      document.getElementById(gridId).innerHTML =
+        '<p style="color:red; font-size:13px">Could not load slots. Is the server running?</p>';
+    }
+  }
+
+  function selectSlot(el, type, label, booked, total, slotId) {
+    document.querySelectorAll('#' + type + '-slots .slot')
+      .forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+
+    selectedSlot[type]   = label;
+    selectedSlotId[type] = slotId;
+
+    document.getElementById(type + '-form').style.display = 'block';
+    document.getElementById(type + '-slot-error').textContent = '';
+  }
+
+  function cancelForm(type) {
+    document.getElementById(type + '-form').style.display = 'none';
+    document.querySelectorAll('#' + type + '-slots .slot')
+      .forEach(s => s.classList.remove('selected'));
+    selectedSlot[type]   = null;
+    selectedSlotId[type] = null;
   }
 
   async function submitRequest(type) {
-    const roll = document.getElementById(type === 'bonafide' ? 'b-roll' : 'f-roll').value;
-    const name = document.getElementById(type === 'bonafide' ? 'b-name' : 'f-name').value;
+    if (!selectedSlotId[type]) {
+      document.getElementById(type + '-slot-error')
+        .textContent = '⚠ Please select a time slot first.';
+      return;
+    }
 
-    const response = await fetch(`${BASE_URL}/api/student/book`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        rollNumber: roll,
-        slotId: String(selectedSlotId[type]),
-        purpose: type.toUpperCase()
-      })
-    });
+    const nameInput = document.getElementById(type === 'bonafide' ? 'b-name' : 'f-name');
+    const rollInput = document.getElementById(type === 'bonafide' ? 'b-roll' : 'f-roll');
 
-    if (response.ok) {
+    if (!nameInput.value.trim()) {
+      nameInput.style.borderColor = '#e84455';
+      nameInput.focus();
+      alert('Please enter your full name.');
+      return;
+    }
+    if (!rollInput.value.trim()) {
+      rollInput.style.borderColor = '#e84455';
+      rollInput.focus();
+      alert('Please enter your roll number.');
+      return;
+    }
+
+    nameInput.style.borderColor = '';
+    rollInput.style.borderColor = '';
+
+    const purpose = type === 'bonafide'
+      ? document.getElementById('bonafide-purpose').value
+      : document.getElementById('fees-type').value;
+
+    document.getElementById('nav-name').textContent = nameInput.value.trim();
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rollNumber: rollInput.value.trim(),
+          slotId:     String(selectedSlotId[type]),
+          purpose:    purpose
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert('Booking failed: ' + (error.message || 'Student not found or slot is full.'));
+        return;
+      }
+
       const token = await response.json();
 
-      // Update UI with Token and OTP
-      document.getElementById('tokenNumber').textContent = '#' + token.tokenNumber;
-      document.getElementById('tokenOtp').textContent = token.otp; // From updated Service
-      document.getElementById('tokenCounter').textContent = type === 'bonafide' ? '📄 Bonafide Counter' : '💰 Fees Counter';
-      document.getElementById('tokenSlot').textContent = 'Time Slot: ' + selectedSlotLabel[type];
-
       const ahead = Math.max(0, token.tokenNumber - 1);
-      document.getElementById('tokenAhead').textContent = ahead;
-      document.getElementById('tokenWait').textContent = (ahead * 5) + 'm';
+      document.getElementById('tokenNumber').textContent  = '#' + token.tokenNumber;
+      document.getElementById('tokenCounter').textContent =
+        type === 'bonafide' ? '📄 Bonafide Counter' : '💰 Fees Counter';
+      document.getElementById('tokenSlot').textContent    = 'Time Slot: ' + selectedSlot[type];
+      document.getElementById('tokenAhead').textContent   = ahead;
+      document.getElementById('tokenWait').textContent    = '~' + (ahead * 3) + 'm';
+      document.getElementById('tokenServing').textContent = '#' + Math.max(1, token.tokenNumber - ahead);
 
       document.getElementById('tokenResult').classList.add('show');
+      document.getElementById(type + '-form').style.display = 'none';
+
+      loadSlots();
       loadMyRequests();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('Could not connect to server. Is Spring Boot running?');
     }
   }
 
   async function loadMyRequests() {
-    const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
-    const tokens = await response.json();
-    const container = document.getElementById('my-requests-list');
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
+      const tokens = await response.json();
 
-    container.innerHTML = tokens.map(token => `
-      <div class="request-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee">
-        <div>
-          <strong>#${token.tokenNumber} — ${token.slot.counter.name}</strong>
-          <div style="font-size:11px; color:#777">
-            OTP: <span class="otp-small">${token.otp}</span> &nbsp;·&nbsp; ${token.slot.slotDate}
+      const container = document.getElementById('my-requests-list');
+
+      if (tokens.length === 0) {
+        container.innerHTML =
+          '<p style="color:#999; font-size:13px; padding:12px 0">No requests yet.</p>';
+        return;
+      }
+
+      container.innerHTML = tokens.map(token => `
+        <div class="request-item">
+          <div>
+            <strong>#${token.tokenNumber} — ${token.slot.counter.name}</strong>
+            <div style="font-size:11px; color:#777; margin-top:3px">
+              ${token.slot.startTime.substring(0,5)} – ${token.slot.endTime.substring(0,5)}
+              &nbsp;·&nbsp; ${token.slot.slotDate}
+              &nbsp;·&nbsp; ${token.purpose}
+            </div>
           </div>
+          <span class="req-badge ${getBadgeClass(token.status)}">
+            ${getBadgeLabel(token.status)}
+          </span>
         </div>
-        <span class="req-badge">${token.status}</span>
-      </div>
-    `).join('');
+      `).join('');
+
+    } catch (error) {
+      console.error('Failed to load requests:', error);
+      document.getElementById('my-requests-list').innerHTML =
+        '<p style="color:red; font-size:13px">Could not load requests.</p>';
+    }
+  }
+
+  function getBadgeClass(status) {
+    const map = { 'WAITING':'pending', 'SERVING':'pending', 'DONE':'approved', 'SKIPPED':'rejected', 'CANCELLED':'rejected' };
+    return map[status] || 'pending';
+  }
+
+  function getBadgeLabel(status) {
+    const map = { 'WAITING':'⏳ Waiting', 'SERVING':'🔵 Serving', 'DONE':'✓ Done', 'SKIPPED':'⏭ Skipped', 'CANCELLED':'✗ Cancelled' };
+    return map[status] || status;
   }
 
   loadSlots();
   loadMyRequests();
+
 </script>
+
 </body>
 </html>

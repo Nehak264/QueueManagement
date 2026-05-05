@@ -46,16 +46,13 @@
   <div>
     <div class="box">
       <h2>📋 Bonafide Queue — Today</h2>
-
-      <!-- queue items loaded from API here -->
       <div id="queue-list">
         <p style="color:#999; font-size:13px">Loading queue...</p>
       </div>
-
     </div>
   </div>
 
-  <!-- RIGHT — DETAILS + CERTIFICATE PREVIEW -->
+  <!-- RIGHT — DETAILS + OTP + CERTIFICATE PREVIEW -->
   <div>
 
     <!-- STUDENT DETAILS FORM -->
@@ -126,6 +123,43 @@
       </div>
     </div>
 
+    <!-- OTP VERIFICATION BOX -->
+    <div class="box" id="otp-box" style="display:none">
+      <h2>🔐 OTP Verification</h2>
+
+      <div style="background:#e8f0fe; border:1px solid #c5d8fc; border-radius:8px;
+                  padding:12px 14px; margin-bottom:16px; font-size:13px; color:#1a73e8;">
+        📱 Click <strong>Send OTP</strong> to generate a code.
+        Student shows the OTP — admin enters it to verify before marking done.
+      </div>
+
+      <!-- OTP display after sending -->
+      <div id="otp-display" style="display:none; background:#fff3cd; border:1px solid #ffc107;
+           border-radius:8px; padding:14px; margin-bottom:16px; text-align:center;">
+        <p style="font-size:12px; color:#856404; margin-bottom:6px;">
+          OTP Generated — Show to Student:
+        </p>
+        <div id="otp-value" style="font-size:40px; font-weight:700; color:#1a73e8;
+             letter-spacing:12px;"></div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-blue" onclick="sendOtp()">
+          📤 Send OTP
+        </button>
+        <input type="text" id="otp-input" maxlength="4"
+               placeholder="_ _ _ _"
+               style="padding:9px 12px; border:1.5px solid #ddd; border-radius:7px;
+                 font-size:20px; width:130px; letter-spacing:8px; text-align:center;
+                 outline:none;" />
+        <button class="btn btn-green" onclick="verifyOtp()">
+          ✓ Verify OTP
+        </button>
+      </div>
+
+      <p id="otp-message" style="font-size:13px; margin-top:10px; font-weight:600;"></p>
+    </div>
+
     <!-- CERTIFICATE PREVIEW -->
     <div class="box">
       <h2>🖨️ Certificate Preview</h2>
@@ -134,10 +168,12 @@
         <div class="preview-label">
           <span>BONAFIDE CERTIFICATE — PRINT PREVIEW</span>
           <div style="display:flex; gap:8px">
-            <button class="btn btn-print" onclick="window.print()" style="padding:5px 14px; font-size:12px">
+            <button class="btn btn-print" onclick="window.print()"
+                    style="padding:5px 14px; font-size:12px">
               🖨️ Print
             </button>
-            <button class="btn btn-green" onclick="markDone()" style="padding:5px 14px; font-size:12px">
+            <button class="btn btn-green" onclick="markDone()"
+                    style="padding:5px 14px; font-size:12px">
               ✓ Mark Done
             </button>
           </div>
@@ -206,7 +242,6 @@
 
         </div>
       </div>
-
     </div>
   </div>
 
@@ -220,8 +255,9 @@
 
   // ── Config ──
   const BASE_URL     = "http://localhost:8080";
-  let currentTokenId = null;   // which token is selected
-  let currentSlotId  = 1;      // bonafide slot id in DB
+  let currentTokenId = null;
+  let currentSlotId  = 1;
+  let otpVerified    = false;   // tracks if OTP is verified for current student
 
   // ── Live clock ──
   function updateTime() {
@@ -233,7 +269,7 @@
   updateTime();
   setInterval(updateTime, 1000);
 
-  // ── Set today's date in certificate ──
+  // ── Set today's date ──
   function setDate() {
     const now = new Date();
     const d = now.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
@@ -288,7 +324,7 @@
     }
   }
 
-  // ── Map status to CSS class ──
+  // ── Status → CSS class ──
   function getStatusClass(status) {
     const map = {
       'WAITING':   'waiting',
@@ -300,9 +336,10 @@
     return map[status] || 'waiting';
   }
 
-  // ── Select a token from queue — fills form + cert preview ──
+  // ── Select token — fills form, shows OTP box ──
   function selectToken(tokenId, name, roll, cls, div, purpose, tokenNumber, event) {
     currentTokenId = tokenId;
+    otpVerified    = false;
 
     // highlight selected row
     document.querySelectorAll('.queue-item').forEach(i => i.classList.remove('selected'));
@@ -318,16 +355,26 @@
     document.getElementById('f-slot').value    = '9:00 AM – 11:00 AM';
     document.getElementById('f-note').value    = '';
 
-    // update cert ref number
+    // update cert ref
     document.getElementById('cert-ref').innerHTML =
       'Ref. No: TKIET/CSE/BON/2026/0' + tokenNumber +
       ' &nbsp;&nbsp; Date: <span id="cert-date">' +
       document.getElementById('f-date').value + '</span>';
 
     generateCert();
+
+    // show OTP box — reset state
+    document.getElementById('otp-box').style.display    = 'block';
+    document.getElementById('otp-display').style.display = 'none';
+    document.getElementById('otp-input').value           = '';
+    document.getElementById('otp-input').style.borderColor = '';
+    document.getElementById('otp-message').textContent   = '';
+
+    // scroll to OTP box
+    document.getElementById('otp-box').scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ── Generate Certificate preview from form values ──
+  // ── Generate Certificate preview ──
   function generateCert() {
     const name    = document.getElementById('f-name').value;
     const roll    = document.getElementById('f-roll').value;
@@ -355,24 +402,108 @@
     noteLine.innerHTML = note.trim() !== '' ? '<em>Note: ' + note + '</em>' : '';
   }
 
-  // ── Mark Done — calls API ──
-  async function markDone() {
+  // ── Send OTP ──
+  async function sendOtp() {
     if (!currentTokenId) {
       alert('Please select a student from the queue first.');
       return;
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/admin/done?tokenId=${currentTokenId}`, {
-        method: 'POST'
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/admin/otp/send?tokenId=${currentTokenId}`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        alert('Failed to generate OTP.');
+        return;
+      }
+
+      const token = await response.json();
+
+      // show OTP on screen
+      document.getElementById('otp-display').style.display = 'block';
+      document.getElementById('otp-value').textContent     = token.otp;
+      document.getElementById('otp-message').style.color   = '#1a73e8';
+      document.getElementById('otp-message').textContent   = '📋 OTP generated. Ask student to verify.';
+
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      alert('Could not generate OTP. Is server running?');
+    }
+  }
+
+  // ── Verify OTP ──
+  async function verifyOtp() {
+    if (!currentTokenId) {
+      alert('Please select a student first.');
+      return;
+    }
+
+    const otp = document.getElementById('otp-input').value.trim();
+
+    if (otp.length !== 4) {
+      document.getElementById('otp-message').style.color   = '#e84455';
+      document.getElementById('otp-message').textContent   = '⚠ Enter the 4-digit OTP.';
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/admin/otp/verify?tokenId=${currentTokenId}&otp=${otp}`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        document.getElementById('otp-message').style.color   = '#e84455';
+        document.getElementById('otp-message').textContent   = '❌ Wrong OTP. Please try again.';
+        document.getElementById('otp-input').style.borderColor = '#e84455';
+        return;
+      }
+
+      // OTP verified!
+      otpVerified = true;
+      document.getElementById('otp-input').style.borderColor = '#28a745';
+      document.getElementById('otp-message').style.color     = '#28a745';
+      document.getElementById('otp-message').textContent     = '✅ OTP Verified! You can now Mark Done.';
+
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      alert('Could not verify OTP.');
+    }
+  }
+
+  // ── Mark Done ──
+  async function markDone() {
+    if (!currentTokenId) {
+      alert('Please select a student from the queue first.');
+      return;
+    }
+
+    // block if OTP not verified
+    if (!otpVerified) {
+      alert('⚠ Please verify OTP first before marking done.');
+      document.getElementById('otp-box').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/admin/done?tokenId=${currentTokenId}`,
+        { method: 'POST' }
+      );
 
       if (!response.ok) {
         alert('Failed to mark as done.');
         return;
       }
 
+      // reset everything
       currentTokenId = null;
+      otpVerified    = false;
+      document.getElementById('otp-box').style.display = 'none';
+
       await loadQueue();
       await loadStats();
 
@@ -382,7 +513,7 @@
     }
   }
 
-  // ── Skip Student — calls API ──
+  // ── Skip Student ──
   async function skipStudent() {
     if (!currentTokenId) {
       alert('Please select a student from the queue first.');
@@ -390,9 +521,10 @@
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/admin/skip?tokenId=${currentTokenId}`, {
-        method: 'POST'
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/admin/skip?tokenId=${currentTokenId}`,
+        { method: 'POST' }
+      );
 
       if (!response.ok) {
         alert('Failed to skip student.');
@@ -400,6 +532,9 @@
       }
 
       currentTokenId = null;
+      otpVerified    = false;
+      document.getElementById('otp-box').style.display = 'none';
+
       await loadQueue();
       await loadStats();
 
@@ -409,7 +544,7 @@
     }
   }
 
-  // ── Load Stats — calls API ──
+  // ── Load Stats ──
   async function loadStats() {
     try {
       const response = await fetch(`${BASE_URL}/api/admin/stats`);
