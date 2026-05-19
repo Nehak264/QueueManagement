@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QMS Student Registration</title>
+    <link rel="stylesheet" href="student_style.css">
+</head>
+<body>
+
+<div class="navbar">
+    <div>
+        <h1>🎓 Student Registration</h1>
+        <p>TKIET Warananangar — CSE Department</p>
+    </div>
+</div>
+
+<div class="container" style="max-width:600px">
+
+    <!-- SUCCESS MESSAGE -->
+    <div id="success-msg" style="display:none; background:#d4edda; border:1.5px solid #28a745;
+       border-radius:10px; padding:20px 24px; margin-bottom:20px; text-align:center;">
+        <p style="font-size:20px; font-weight:700; color:#28a745;">✅ Registered Successfully!</p>
+        <p style="font-size:13px; color:#555; margin-top:8px;">
+            Your details have been saved. You can now book a token.
+        </p>
+        <a href="student.html">
+            <button class="btn btn-blue" style="margin-top:16px">
+                🎫 Go to Book Token
+            </button>
+        </a>
+    </div>
+
+    <!-- REGISTRATION FORM -->
+    <div class="box" id="reg-form-box">
+        <h2>📝 Student Registration Form</h2>
+        <p style="font-size:12px; color:#777; margin-bottom:20px;">
+            Fill your details below. This information will be stored in the system.
+        </p>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="reg-name" placeholder="e.g. Neha Kulkarni" />
+            </div>
+            <div class="form-group">
+                <label>Roll Number *</label>
+                <input type="text" id="reg-roll" placeholder="e.g. 2201234" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Class *</label>
+                <select id="reg-class">
+                    <option value="">Select Class</option>
+                    <option value="FE">FE — First Year</option>
+                    <option value="SE">SE — Second Year</option>
+                    <option value="TE">TE — Third Year</option>
+                    <option value="BE">BE — Fourth Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Division *</label>
+                <select id="reg-div">
+                    <option value="">Select Division</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="reg-email" placeholder="e.g. neha@tkiet.edu" />
+        </div>
+
+        <p id="reg-error" style="font-size:12px; color:#e84455; margin-bottom:10px;"></p>
+
+        <div style="display:flex; gap:10px; margin-top:10px">
+            <button class="btn btn-blue" onclick="registerStudent()">
+                ✅ Register
+            </button>
+            <a href="student.html">
+                <button class="btn btn-outline">
+                    Already Registered? Book Token
+                </button>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        QMS · TKIET Warananangar · CSE Dept · 2025–26
+    </div>
+
+</div>
+
+<script>
+    const BASE_URL = "http://localhost:8080";
+
+    async function registerStudent() {
+
+      const name  = document.getElementById('reg-name').value.trim();
+      const roll  = document.getElementById('reg-roll').value.trim();
+      const cls   = document.getElementById('reg-class').value;
+      const div   = document.getElementById('reg-div').value;
+      const email = document.getElementById('reg-email').value.trim();
+
+      // validate all fields
+      if (!name || !roll || !cls || !div || !email) {
+        document.getElementById('reg-error').textContent =
+          '⚠ Please fill all fields before registering.';
+        return;
+      }
+
+      document.getElementById('reg-error').textContent = '';
+
+      try {
+        const response = await fetch(`${BASE_URL}/api/student/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:        name,
+            rollNumber:  roll,
+            className:   cls,
+            division:    div,
+            email:       email
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          document.getElementById('reg-error').textContent =
+            '❌ ' + (error.message || 'Registration failed. Roll number may already exist.');
+          return;
+        }
+
+        // show success
+        document.getElementById('reg-form-box').style.display = 'none';
+        document.getElementById('success-msg').style.display  = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (error) {
+        console.error('Registration error:', error);
+        document.getElementById('reg-error').textContent =
+          '❌ Could not connect to server. Is Spring Boot running?';
+      }
+    }
+</script>
+
+</body>
+</html>

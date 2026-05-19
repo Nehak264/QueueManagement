@@ -1,7 +1,9 @@
 package com.tkiet.qms.controller;
 
+import com.tkiet.qms.entity.Student;
 import com.tkiet.qms.entity.TimeSlot;
 import com.tkiet.qms.entity.Token;
+import com.tkiet.qms.repository.StudentRepository;
 import com.tkiet.qms.service.SlotService;
 import com.tkiet.qms.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +22,16 @@ public class StudentController {
     @Autowired
     private SlotService slotService;
 
+    @Autowired
+    private StudentRepository studentRepository;  // ← was missing
+
     // GET /api/student/slots?counterId=1
-    // student sees available slots for a counter
     @GetMapping("/slots")
     public List<TimeSlot> getSlots(@RequestParam Long counterId) {
         return slotService.getAvailableSlots(counterId);
     }
 
     // POST /api/student/book
-    // body: { "rollNumber": "2201234", "slotId": 1, "purpose": "Bank Account" }
-    // student books a token
     @PostMapping("/book")
     public Token bookToken(@RequestBody Map<String, String> body) {
         return tokenService.bookToken(
@@ -40,16 +42,27 @@ public class StudentController {
     }
 
     // GET /api/student/tokens?studentId=1
-    // student sees their own past requests
     @GetMapping("/tokens")
     public List<Token> getMyTokens(@RequestParam Long studentId) {
         return tokenService.getStudentTokens(studentId);
     }
 
     // POST /api/student/cancel?tokenId=5
-    // student cancels their token
     @PostMapping("/cancel")
     public Token cancelToken(@RequestParam Long tokenId) {
         return tokenService.cancelToken(tokenId);
+    }
+
+    // POST /api/student/register
+    @PostMapping("/register")
+    public Student registerStudent(@RequestBody Student student) {
+
+        // check if roll number already exists
+        Student existing = studentRepository.findByRollNumber(student.getRollNumber());
+        if (existing != null) {
+            throw new RuntimeException("Student with this roll number already exists!");
+        }
+
+        return studentRepository.save(student);
     }
 }

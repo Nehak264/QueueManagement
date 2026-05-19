@@ -43,6 +43,19 @@
     </div>
   </div>
 
+  <!-- OTP DISPLAY — shown when admin sends OTP -->
+  <div id="otp-result" style="display:none; background:#fff3cd; border:1.5px solid #ffc107;
+       border-radius:10px; padding:20px 24px; margin-bottom:20px; text-align:center;">
+    <p style="font-size:13px; color:#856404; margin-bottom:8px; font-weight:600;">
+      🔐 Your OTP for Counter Verification
+    </p>
+    <div id="student-otp-value" style="font-size:52px; font-weight:700; color:#1a73e8;
+         letter-spacing:14px; margin:10px 0;">—</div>
+    <p style="font-size:12px; color:#856404;">
+      Show this OTP to the admin at the counter
+    </p>
+  </div>
+
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('bonafide', this)">
@@ -245,6 +258,7 @@
   let selectedSlot   = { bonafide: null, fees: null };
   let selectedSlotId = { bonafide: null, fees: null };
 
+  // ── Tab switching ──
   function switchTab(type, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
@@ -253,6 +267,7 @@
     document.getElementById('tokenResult').classList.remove('show');
   }
 
+  // ── Load slots ──
   async function loadSlots() {
     await loadSlotsForCounter(1, 'bonafide-slots', 'bonafide');
     await loadSlotsForCounter(2, 'fees-slots', 'fees');
@@ -304,6 +319,7 @@
     }
   }
 
+  // ── Select a slot ──
   function selectSlot(el, type, label, booked, total, slotId) {
     document.querySelectorAll('#' + type + '-slots .slot')
       .forEach(s => s.classList.remove('selected'));
@@ -316,6 +332,7 @@
     document.getElementById(type + '-slot-error').textContent = '';
   }
 
+  // ── Cancel form ──
   function cancelForm(type) {
     document.getElementById(type + '-form').style.display = 'none';
     document.querySelectorAll('#' + type + '-slots .slot')
@@ -324,7 +341,9 @@
     selectedSlotId[type] = null;
   }
 
+  // ── Submit booking — calls real API ──
   async function submitRequest(type) {
+
     if (!selectedSlotId[type]) {
       document.getElementById(type + '-slot-error')
         .textContent = '⚠ Please select a time slot first.';
@@ -334,6 +353,7 @@
     const nameInput = document.getElementById(type === 'bonafide' ? 'b-name' : 'f-name');
     const rollInput = document.getElementById(type === 'bonafide' ? 'b-roll' : 'f-roll');
 
+    // validate
     if (!nameInput.value.trim()) {
       nameInput.style.borderColor = '#e84455';
       nameInput.focus();
@@ -347,6 +367,7 @@
       return;
     }
 
+    // reset borders
     nameInput.style.borderColor = '';
     rollInput.style.borderColor = '';
 
@@ -354,6 +375,7 @@
       ? document.getElementById('bonafide-purpose').value
       : document.getElementById('fees-type').value;
 
+    // update navbar name
     document.getElementById('nav-name').textContent = nameInput.value.trim();
 
     try {
@@ -375,6 +397,7 @@
 
       const token = await response.json();
 
+      // show token result
       const ahead = Math.max(0, token.tokenNumber - 1);
       document.getElementById('tokenNumber').textContent  = '#' + token.tokenNumber;
       document.getElementById('tokenCounter').textContent =
@@ -397,6 +420,7 @@
     }
   }
 
+  // ── Load My Requests ──
   async function loadMyRequests() {
     try {
       const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
@@ -433,18 +457,58 @@
     }
   }
 
+  // ── Badge helpers ──
   function getBadgeClass(status) {
-    const map = { 'WAITING':'pending', 'SERVING':'pending', 'DONE':'approved', 'SKIPPED':'rejected', 'CANCELLED':'rejected' };
+    const map = {
+      'WAITING':   'pending',
+      'SERVING':   'pending',
+      'DONE':      'approved',
+      'SKIPPED':   'rejected',
+      'CANCELLED': 'rejected'
+    };
     return map[status] || 'pending';
   }
 
   function getBadgeLabel(status) {
-    const map = { 'WAITING':'⏳ Waiting', 'SERVING':'🔵 Serving', 'DONE':'✓ Done', 'SKIPPED':'⏭ Skipped', 'CANCELLED':'✗ Cancelled' };
+    const map = {
+      'WAITING':   '⏳ Waiting',
+      'SERVING':   '🔵 Serving',
+      'DONE':      '✓ Done',
+      'SKIPPED':   '⏭ Skipped',
+      'CANCELLED': '✗ Cancelled'
+    };
     return map[status] || status;
   }
 
+  // ── On page load ──
   loadSlots();
   loadMyRequests();
+
+  // ── Poll for OTP every 5 seconds ──
+  async function checkForOtp() {
+    try {
+      const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
+      const tokens = await response.json();
+
+      if (tokens.length === 0) return;
+
+      // find latest WAITING token that has OTP generated
+      const latest = tokens.find(t => t.status === 'WAITING' && t.otp !== null);
+
+      if (latest && latest.otp) {
+        document.getElementById('otp-result').style.display = 'block';
+        document.getElementById('student-otp-value').textContent = latest.otp;
+      } else {
+        document.getElementById('otp-result').style.display = 'none';
+      }
+
+    } catch (error) {
+      console.error('OTP check failed:', error);
+    }
+  }
+
+  // check OTP every 5 seconds
+  setInterval(checkForOtp, 5000);
 
 </script>
 
