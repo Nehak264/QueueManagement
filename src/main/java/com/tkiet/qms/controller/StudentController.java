@@ -65,4 +65,11 @@ public class StudentController {
 
         return studentRepository.save(student);
     }
+    // GET /api/student/tokens/byRoll?rollNumber=2201234
+    @GetMapping("/tokens/byRoll")
+    public List<Token> getTokensByRoll(@RequestParam String rollNumber) {
+        Student student = studentRepository.findByRollNumber(rollNumber);
+        if (student == null) return new java.util.ArrayList<>();
+        return tokenService.getStudentTokens(student.getId());
+    }
 }

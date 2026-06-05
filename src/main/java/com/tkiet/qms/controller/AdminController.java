@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,14 +84,12 @@ public class AdminController {
     }
 
     // ── GET /api/admin/students ──
-    // get all students from database
     @GetMapping("/students")
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
 
     // ── POST /api/admin/upload-students ──
-    // upload Excel file — imports all students to database
     @PostMapping("/upload-students")
     public String uploadStudents(@RequestParam("file") MultipartFile file) {
         try {
@@ -123,7 +120,7 @@ public class AdminController {
                     continue;
                 }
 
-                // save student to database
+                // save to database
                 Student student = new Student();
                 student.setName(name);
                 student.setRollNumber(rollNumber);
@@ -143,7 +140,6 @@ public class AdminController {
     }
 
     // ── GET /api/admin/download-students ──
-    // download all students as Excel file
     @GetMapping("/download-students")
     public void downloadStudents(HttpServletResponse response) throws IOException {
 
@@ -169,20 +165,20 @@ public class AdminController {
             cell.setCellStyle(headerStyle);
         }
 
-        // data rows
+
+        // data rows — specify exact order
         int rowNum = 1;
         for (Student s : students) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(s.getId());
-            row.createCell(1).setCellValue(s.getName());
-            row.createCell(2).setCellValue(s.getRollNumber());
-            row.createCell(3).setCellValue(s.getClassName());
-            row.createCell(4).setCellValue(s.getDivision());
+            row.createCell(1).setCellValue(s.getName());        // Name
+            row.createCell(2).setCellValue(s.getRollNumber());  // Roll Number
+            row.createCell(3).setCellValue(s.getClassName());   // Class
+            row.createCell(4).setCellValue(s.getDivision());    // Division
             row.createCell(5).setCellValue(s.getEmail() != null ? s.getEmail() : "");
             row.createCell(6).setCellValue(s.getCreatedAt() != null ? s.getCreatedAt().toString() : "");
         }
-
-        // auto size all columns
+        // auto size columns
         for (int i = 0; i < columns.length; i++) {
             sheet.autoSizeColumn(i);
         }

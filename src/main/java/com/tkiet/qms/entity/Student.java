@@ -1,10 +1,12 @@
 package com.tkiet.qms.entity;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
+@JsonPropertyOrder({"id", "name", "rollNumber", "className", "division", "email", "createdAt"})
 @Entity
 @Table(name = "students")
 @Data
@@ -22,10 +24,10 @@ public class Student {
     @Column(name = "roll_number", unique = true, nullable = false)
     private String rollNumber;
 
-    @Column(name = "class_name")   // 'class' is a reserved keyword in Java
-    private String className;      // FE, SE, TE, BE
+    @Column(name = "class_name")
+    private String className;
 
-    private String division;       // A or B
+    private String division;
 
     private String email;
 

@@ -155,7 +155,7 @@
                style="padding:9px 12px; border:1.5px solid #ddd; border-radius:7px;
                  font-size:20px; width:130px; letter-spacing:8px; text-align:center;
                  outline:none;" />
-        <button class="btn btn-green" onclick="verifyOtp()">
+        <button class="btn btn-blue" onclick="verifyOtp()">
           ✓ Verify OTP
         </button>
       </div>
@@ -257,7 +257,7 @@
 <script>
 
   // ── Config ──
-  const BASE_URL     = "http://localhost:8080";
+  const BASE_URL = "http://10.73.124.51:8080";
   let currentTokenId = null;
   let currentSlotId  = 1;
   let otpVerified    = false;   // tracks if OTP is verified for current student

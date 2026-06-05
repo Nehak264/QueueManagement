@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Students — QMS Admin</title>
+    <link rel="stylesheet" href="bonafide_style.css">
+</head>
+<body>
+
+<div class="navbar">
+    <div>
+        <h1>📊 Upload Student Data</h1>
+        <p>TKIET Warananangar — Admin Panel</p>
+    </div>
+</div>
+
+<div style="max-width:600px; margin:40px auto; padding:0 24px;">
+
+    <!-- SUCCESS MESSAGE -->
+    <div id="success-msg" style="display:none; background:#d4edda; border:1.5px solid #28a745;
+         border-radius:10px; padding:20px; margin-bottom:20px; text-align:center;">
+        <p id="success-text" style="font-size:16px; font-weight:700; color:#28a745;"></p>
+    </div>
+
+    <!-- ERROR MESSAGE -->
+    <div id="error-msg" style="display:none; background:#f8d7da; border:1.5px solid #e84455;
+         border-radius:10px; padding:20px; margin-bottom:20px; text-align:center;">
+        <p id="error-text" style="font-size:14px; color:#e84455;"></p>
+    </div>
+
+    <!-- UPLOAD BOX -->
+    <div class="box">
+        <h2>📁 Upload Excel File</h2>
+
+        <!-- FORMAT GUIDE -->
+        <div style="background:#e8f0fe; border:1px solid #c5d8fc; border-radius:8px;
+                    padding:14px; margin-bottom:20px; font-size:13px; color:#1a73e8;">
+            <strong>📋 Excel Format Required:</strong><br><br>
+            Your Excel file must have these columns in this exact order:<br><br>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <tr style="background:#1a73e8; color:white;">
+                    <th style="padding:6px 10px;">A — Name</th>
+                    <th style="padding:6px 10px;">B — Roll Number</th>
+                    <th style="padding:6px 10px;">C — Class</th>
+                    <th style="padding:6px 10px;">D — Division</th>
+                    <th style="padding:6px 10px;">E — Email</th>
+                </tr>
+                <tr style="background:#f4f7fc;">
+                    <td style="padding:6px 10px;">Neha Kulkarni</td>
+                    <td style="padding:6px 10px;">2201234</td>
+                    <td style="padding:6px 10px;">SE</td>
+                    <td style="padding:6px 10px;">B</td>
+                    <td style="padding:6px 10px;">neha@tkiet.edu</td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 10px;">Rahul Patil</td>
+                    <td style="padding:6px 10px;">2201235</td>
+                    <td style="padding:6px 10px;">TE</td>
+                    <td style="padding:6px 10px;">A</td>
+                    <td style="padding:6px 10px;">rahul@tkiet.edu</td>
+                </tr>
+            </table>
+            <br>
+            ⚠ First row must be the header row. Data starts from row 2.
+        </div>
+
+        <!-- FILE INPUT -->
+        <div class="form-group">
+            <label>Select Excel File (.xlsx)</label>
+            <input type="file" id="excel-file" accept=".xlsx"
+                   style="padding:9px 12px; border:1.5px solid #ddd; border-radius:7px;
+                          font-size:13px; width:100%;" />
+        </div>
+
+        <div id="file-name" style="font-size:12px; color:#777; margin-bottom:16px;"></div>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn btn-blue" onclick="uploadFile()">
+                📤 Upload & Import to Database
+            </button>
+            <a href="admin.html">
+                <button class="btn btn-outline">
+                    ← Back to Admin
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- VERIFY SECTION -->
+    <div class="box">
+        <h2>✅ Verify Imported Students</h2>
+        <p style="font-size:13px; color:#777; margin-bottom:16px;">
+            After uploading, click below to see all students in the database.
+        </p>
+        <button class="btn btn-green" onclick="loadStudents()"
+                style="background:#28a745; color:white;">
+            🔍 View All Students in Database
+        </button>
+
+        <div id="students-list" style="margin-top:16px;"></div>
+    </div>
+
+</div>
+
+<script>
+    const BASE_URL = "http://10.73.124.51:8080";
+
+    // ── Show selected file name ──
+    document.getElementById('excel-file').addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            document.getElementById('file-name').textContent = '📄 Selected: ' + file.name;
+        }
+    });
+
+    // ── Upload Excel file ──
+    async function uploadFile() {
+        const fileInput = document.getElementById('excel-file');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select an Excel file first!');
+            return;
+        }
+
+        if (!file.name.endsWith('.xlsx')) {
+            alert('Please select a .xlsx file only!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/admin/upload-students`, {
+                method: 'POST',
+                body: formData  // NO Content-Type header — browser sets it automatically
+            });
+
+            const message = await response.text();
+
+            document.getElementById('success-msg').style.display = 'block';
+            document.getElementById('error-msg').style.display   = 'none';
+            document.getElementById('success-text').textContent  = '✅ ' + message;
+
+            // auto load students after upload
+            loadStudents();
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            document.getElementById('error-msg').style.display   = 'block';
+            document.getElementById('success-msg').style.display = 'none';
+            document.getElementById('error-text').textContent    = '❌ Upload failed. Is Spring Boot running?';
+        }
+    }
+
+    // ── Load all students from database ──
+    async function loadStudents() {
+        try {
+            const response = await fetch(`${BASE_URL}/api/admin/students`);
+            const students = await response.json();
+
+            const container = document.getElementById('students-list');
+
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color:#999; font-size:13px;">No students in database yet.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;">
+                    <tr style="background:#1a3a5c; color:white;">
+                        <th style="padding:8px 12px; text-align:left;">Name</th>
+                        <th style="padding:8px 12px; text-align:left;">Roll No</th>
+                        <th style="padding:8px 12px; text-align:left;">Class</th>
+                        <th style="padding:8px 12px; text-align:left;">Division</th>
+                        <th style="padding:8px 12px; text-align:left;">Email</th>
+                    </tr>
+                    ${students.map((s, i) => `
+                        <tr style="background:${i % 2 === 0 ? '#f4f7fc' : 'white'};">
+                            <td style="padding:8px 12px;">${s.name}</td>
+                            <td style="padding:8px 12px;">${s.rollNumber}</td>
+                            <td style="padding:8px 12px;">${s.className}</td>
+                            <td style="padding:8px 12px;">${s.division}</td>
+                            <td style="padding:8px 12px;">${s.email || '—'}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                <p style="font-size:12px; color:#777; margin-top:10px;">
+                    Total: ${students.length} students in database
+                </p>
+            `;
+
+        } catch (error) {
+            console.error('Load students error:', error);
+            document.getElementById('students-list').innerHTML =
+                '<p style="color:red; font-size:13px;">Could not load students. Is Spring Boot running?</p>';
+        }
+    }
+</script>
+
+</body>
+</html>
