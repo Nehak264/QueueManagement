@@ -1,10 +1,12 @@
 package com.tkiet.qms.controller;
 
 import com.tkiet.qms.entity.BonafideCertificate;
+import com.tkiet.qms.entity.FeePayment;
 import com.tkiet.qms.entity.Student;
 import com.tkiet.qms.entity.Token;
 import com.tkiet.qms.repository.StudentRepository;
 import com.tkiet.qms.service.BonafideService;
+import com.tkiet.qms.service.FeePaymentService;
 import com.tkiet.qms.service.TokenService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
@@ -31,6 +33,9 @@ public class AdminController {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private FeePaymentService feePaymentService;
 
     // ── GET /api/admin/queue?slotId=1 ──
     @GetMapping("/queue")
@@ -69,6 +74,21 @@ public class AdminController {
     @GetMapping("/certificate")
     public BonafideCertificate getCertificate(@RequestParam Long tokenId) {
         return bonafideService.getCertificate(tokenId);
+    }
+
+    // ── GET /api/admin/fee-payment?tokenId=5 ──
+    @GetMapping("/fee-payment")
+    public FeePayment getFeePayment(@RequestParam Long tokenId) {
+        return feePaymentService.getPaymentByTokenId(tokenId)
+                .orElseThrow(() -> new RuntimeException("Fee payment details not found for token: " + tokenId));
+    }
+
+    // ── POST /api/admin/receipt ──
+    @PostMapping("/receipt")
+    public FeePayment generateReceipt(@RequestBody Map<String, String> body) {
+        return feePaymentService.finalizePayment(
+                Long.parseLong(body.get("tokenId"))
+        );
     }
 
     // ── POST /api/admin/otp/send?tokenId=1 ──

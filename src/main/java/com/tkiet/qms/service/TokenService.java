@@ -19,8 +19,16 @@ public class TokenService {
     @Autowired
     private TimeSlotRepository timeSlotRepository;
 
+    @Autowired
+    private FeePaymentService feePaymentService;
+
     // ── BOOK A TOKEN ──────────────────────────────────────
     public Token bookToken(String rollNumber, Long slotId, String purpose) {
+        return bookToken(rollNumber, slotId, purpose, null, null, null);
+    }
+
+    // ── BOOK A TOKEN (Overloaded with Fee details) ─────────
+    public Token bookToken(String rollNumber, Long slotId, String purpose, Double amount, String paymentMode, String referenceNumber) {
 
         // 1. find the student by roll number
         Student student = studentRepository.findByRollNumber(rollNumber);
@@ -60,8 +68,15 @@ public class TokenService {
         slot.setBookedCount(slot.getBookedCount() + 1);
         timeSlotRepository.save(slot);
 
-        // 8. save and return the token
-        return tokenRepository.save(token);
+        // 8. save the token
+        Token savedToken = tokenRepository.save(token);
+
+        // 9. If this booking is for the Fees Counter, create a FeePayment record
+        if (slot.getCounter().getName().equalsIgnoreCase("Fees Counter") || slot.getCounter().getId() == 2) {
+            feePaymentService.createPayment(savedToken, purpose, amount, paymentMode, referenceNumber);
+        }
+
+        return savedToken;
     }
 
     // ── GET QUEUE FOR A SLOT (admin view) ─────────────────
@@ -81,7 +96,17 @@ public class TokenService {
 
         token.setStatus(TokenStatus.DONE);
         token.setServedAt(LocalDateTime.now());  // record when it was done
-        return tokenRepository.save(token);
+        Token savedToken = tokenRepository.save(token);
+
+        // If it's a fees token, finalize the payment (generate receipt number)
+        if (token.getSlot().getCounter().getName().equalsIgnoreCase("Fees Counter") || token.getSlot().getCounter().getId() == 2) {
+            try {
+                feePaymentService.finalizePayment(tokenId);
+            } catch (Exception e) {
+                System.out.println("Could not finalize payment on markDone: " + e.getMessage());
+            }
+        }
+        return savedToken;
     }
 
     // ── SKIP STUDENT (admin) ──────────────────────────────

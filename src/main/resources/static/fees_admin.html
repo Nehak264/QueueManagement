@@ -2,23 +2,107 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Admin — Bonafide Dashboard</title>
+  <title>Admin — Fees Dashboard</title>
   <link rel="stylesheet" href="bonafide_style.css">
+  <style>
+    /* Override primary theme colors to Emerald Green for Fees */
+    .navbar {
+      background: #10b981;
+    }
+    .box h2 {
+      color: #10b981;
+      border-bottom: 2px solid #e6f4ea;
+    }
+    .queue-item:hover {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    .queue-item.selected {
+      border-color: #10b981;
+      background: #e6f4ea;
+    }
+    .queue-item .token-num {
+      background: #10b981;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #10b981;
+    }
+    .btn-blue {
+      background: #10b981;
+    }
+    .btn-outline {
+      color: #10b981;
+      border: 1.5px solid #10b981;
+    }
+    
+    /* Fee receipt specific styles */
+    #receipt-print {
+      padding: 32px 36px;
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      line-height: 1.6;
+      background: white;
+      min-height: 400px;
+      color: #000;
+    }
+    .receipt-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 15px 0;
+    }
+    .receipt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin: 15px 0;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .receipt-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    .receipt-table th, .receipt-table td {
+      border: 1px solid #333;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .receipt-table th {
+      background: #f2f2f2;
+    }
+    
+    @media print {
+      body * { visibility: hidden; }
+      #receipt-print, #receipt-print * { visibility: visible; }
+      #receipt-print {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        padding: 40px 60px;
+        font-size: 15px;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
 <div class="navbar">
   <div>
-    <h1>📄 Bonafide Certificate Dashboard</h1>
+    <h1>💰 Fees Submission Dashboard</h1>
     <p>TKIET Warananangar — Admin Panel</p>
   </div>
   <div style="text-align:right">
-    <p style="font-weight:600">Prof. A. Patil</p>
+    <p style="font-weight:600">Accounts Section</p>
     <p id="live-time"></p>
   </div>
   <div style="padding:10px 24px; background:#f4f7fc; border-bottom:1px solid #ddd;
-            display:flex; gap:10px; align-items:center;">
+              display:flex; gap:10px; align-items:center;">
     <a href="http://localhost:8080/api/admin/download-students">
       <button class="btn btn-green" style="background:#28a745; color:white;">
         📥 Download Students Excel
@@ -39,7 +123,7 @@
     <div class="lbl">Waiting</div>
   </div>
   <div class="stat-card purple">
-    <div class="num" id="stat-printing">0</div>
+    <div class="num" id="stat-serving">0</div>
     <div class="lbl">Serving</div>
   </div>
   <div class="stat-card green">
@@ -62,19 +146,19 @@
   <!-- LEFT — QUEUE LIST -->
   <div>
     <div class="box">
-      <h2>📋 Bonafide Queue — Today</h2>
+      <h2>📋 Fees Queue — Today</h2>
       <div id="queue-list">
         <p style="color:#999; font-size:13px">Loading queue...</p>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT — DETAILS + OTP + CERTIFICATE PREVIEW -->
+  <!-- RIGHT — DETAILS + OTP + RECEIPT PREVIEW -->
   <div>
 
     <!-- STUDENT DETAILS FORM -->
     <div class="box">
-      <h2>👤 Student Details — Auto Filled</h2>
+      <h2>👤 Payment & Student Details</h2>
 
       <div class="form-row">
         <div class="form-group">
@@ -111,7 +195,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Purpose</label>
+          <label>Fees Type</label>
           <input type="text" id="f-purpose" value="—" readonly />
         </div>
         <div class="form-group">
@@ -120,19 +204,29 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Academic Year</label>
-        <input type="text" id="f-year" value="2025 – 2026" />
+      <div class="form-row" style="background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px dashed #ccc; margin-bottom: 14px;">
+        <div class="form-group">
+          <label style="color: #10b981;">Amount Submitted</label>
+          <input type="text" id="f-amount" value="—" readonly style="font-weight: 700; color: #10b981;" />
+        </div>
+        <div class="form-group">
+          <label style="color: #10b981;">Payment Mode</label>
+          <input type="text" id="f-mode" value="—" readonly style="font-weight: 700;" />
+        </div>
+        <div class="form-group full-width" style="margin-bottom: 0;">
+          <label>Transaction Ref / DD No</label>
+          <input type="text" id="f-ref-num" value="—" readonly />
+        </div>
       </div>
 
       <div class="form-group">
         <label>Extra Note (optional)</label>
-        <input type="text" id="f-note" placeholder="Leave blank if none" />
+        <input type="text" id="f-note" placeholder="Leave blank if none" oninput="updateReceiptNote()" />
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-blue" onclick="generateCert()">
-          ⚡ Generate Certificate
+        <button class="btn btn-blue" onclick="markDone()" style="background: #10b981;">
+          ✓ Mark Paid & Done
         </button>
         <button class="btn btn-orange" onclick="skipStudent()">
           ⏭ Skip Student
@@ -144,10 +238,10 @@
     <div class="box" id="otp-box" style="display:none">
       <h2>🔐 OTP Verification</h2>
 
-      <div style="background:#e8f0fe; border:1px solid #c5d8fc; border-radius:8px;
-                  padding:12px 14px; margin-bottom:16px; font-size:13px; color:#1a73e8;">
-        📱 Click <strong>Send OTP</strong> to generate a code.
-        Student shows the OTP — admin enters it to verify before marking done.
+      <div style="background:#e6f4ea; border:1px solid #a3cfbb; border-radius:8px;
+                  padding:12px 14px; margin-bottom:16px; font-size:13px; color:#0f5132;">
+        📱 Click <strong>Send OTP</strong> to generate verification code.
+        Student will show the OTP on their dashboard. Enter it to verify before completing.
       </div>
 
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
@@ -167,83 +261,88 @@
       <p id="otp-message" style="font-size:13px; margin-top:10px; font-weight:600;"></p>
     </div>
 
-    <!-- CERTIFICATE PREVIEW -->
+    <!-- RECEIPT PREVIEW -->
     <div class="box">
-      <h2>🖨️ Certificate Preview</h2>
+      <h2>🖨️ Receipt Preview</h2>
 
       <div class="preview-wrap">
         <div class="preview-label">
-          <span>BONAFIDE CERTIFICATE — PRINT PREVIEW</span>
+          <span>FEE PAYMENT — PRINT PREVIEW</span>
           <div style="display:flex; gap:8px">
             <button class="btn btn-print" onclick="window.print()"
                     style="padding:5px 14px; font-size:12px">
-              🖨️ Print
-            </button>
-            <button class="btn btn-green" onclick="markDone()"
-                    style="padding:5px 14px; font-size:12px">
-              ✓ Mark Done
+              🖨️ Print Receipt
             </button>
           </div>
         </div>
 
-        <!-- THE ACTUAL CERTIFICATE -->
-        <div id="bonafide-print">
+        <!-- THE ACTUAL RECEIPT -->
+        <div id="receipt-print">
 
-          <div class="cert-header">
-            <div class="college-name">
+          <div class="cert-header" style="text-align: center;">
+            <div class="college-name" style="font-size: 16px; font-weight: 700; text-transform: uppercase;">
               Tatyasaheb Kore Institute of Engineering and Technology
             </div>
-            <div class="dept">
+            <div class="dept" style="font-size: 12px; margin-top: 2px;">
               Department of Computer Science and Engineering
             </div>
-            <div class="address">
+            <div class="address" style="font-size: 11px; color: #555;">
               Warananangar, Tal. Peth, Dist. Kolhapur, Maharashtra – 416113
             </div>
-            <hr class="cert-divider">
-            <hr class="cert-divider-thin">
+            <hr class="cert-divider" style="border: none; border-top: 2px solid #333; margin: 8px 0 2px;">
+            <hr class="cert-divider-thin" style="border: none; border-top: 1px solid #333; margin: 2px 0 10px;">
           </div>
 
-          <div class="cert-title">Bonafide Certificate</div>
+          <div class="receipt-title">FEE PAYMENT RECEIPT</div>
 
-          <div class="cert-ref" id="cert-ref">
-            Ref. No: TKIET/CSE/BON/2026/— &nbsp;&nbsp; Date:
-            <span id="cert-date"></span>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 15px;">
+            <span id="receipt-ref-num-str" style="font-weight: 600;">Receipt No: TKIET/CSE/FEE/2026/—</span>
+            <span>Date: <span id="receipt-date"></span></span>
           </div>
 
-          <div class="cert-body" id="cert-body">
-            This is to certify that
-            <span class="highlight" id="cert-name">Mr. / Ms. —</span>,
-            bearing Roll Number
-            <span class="highlight" id="cert-roll">—</span>,
-            is a bonafide student of this institute, currently studying in
-            <span class="highlight" id="cert-class">—</span>,
-            Division <span class="highlight" id="cert-div">—</span>,
-            of the Bachelor of Technology program in
-            <span class="highlight">Computer Science and Engineering</span>
-            for the Academic Year
-            <span class="highlight" id="cert-year">2025 – 2026</span>.
-            <br><br>
-            This certificate is issued for the purpose of
-            <span class="highlight" id="cert-purpose">—</span>
-            as requested by the student.
-            <br><br>
-            <span id="cert-note-line"></span>
+          <div style="font-size: 13px; text-align: justify; line-height: 1.7;">
+            Received with thanks from Mr./Ms. <strong id="receipt-name">—</strong>,
+            bearing Roll Number <strong id="receipt-roll">—</strong>,
+            studying in class <strong id="receipt-class">—</strong>, Division <strong id="receipt-div">—</strong>,
+            of the B.Tech program in Computer Science and Engineering, the sum of
+            <strong>₹<span id="receipt-amount">—</span></strong> 
+            (in words: <strong id="receipt-amount-words">—</strong>) 
+            towards <strong id="receipt-purpose">—</strong>.
           </div>
 
-          <div class="cert-footer">
-            <div class="sign-block">
-              <div class="sign-line"></div>
-              <div>Class Teacher</div>
+          <table class="receipt-table">
+            <thead>
+              <tr>
+                <th>Particulars</th>
+                <th>Payment Mode</th>
+                <th>Reference / Transaction ID</th>
+                <th>Amount Paid</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="receipt-table-particulars">—</td>
+                <td id="receipt-table-mode">—</td>
+                <td id="receipt-table-ref">—</td>
+                <td style="font-weight: 700;">₹<span id="receipt-table-amount">—</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="font-size: 12px; margin-top: 15px; font-style: italic;" id="receipt-note-line"></div>
+          
+          <div style="display: flex; justify-content: space-between; margin-top: 50px; font-size: 12px; text-align: center;">
+            <div style="width: 140px;">
+              <div style="border-top: 1px solid #333; margin-bottom: 5px;"></div>
+              Student Signature
             </div>
-            <div class="sign-block">
-              <div class="sign-line"></div>
-              <div>Head of Department</div>
-              <div style="font-size:12px; color:#555">CSE Department</div>
+            <div style="width: 140px;">
+              <div style="border-top: 1px solid #333; margin-bottom: 5px;"></div>
+              Receiver / Clerk
             </div>
-            <div class="sign-block">
-              <div class="sign-line"></div>
-              <div><strong>Principal</strong></div>
-              <div style="font-size:12px; color:#555">TKIET Warananangar</div>
+            <div style="width: 140px;">
+              <div style="border-top: 1px solid #333; margin-bottom: 5px;"></div>
+              Accountant / HOD
             </div>
           </div>
 
@@ -261,10 +360,10 @@
 <script>
 
   // ── Config ──
-  const BASE_URL = "http://localhost:8080";
+  const BASE_URL = "http://10.73.124.51:8080";
   let currentTokenId = null;
-  let currentSlotId  = 1;
-  let otpVerified    = false;   // tracks if OTP is verified for current student
+  let currentSlotId  = null;
+  let otpVerified    = false; 
 
   // ── Live clock ──
   function updateTime() {
@@ -281,12 +380,40 @@
     const now = new Date();
     const d = now.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
     document.getElementById('f-date').value = d;
-    document.getElementById('cert-date').textContent = d;
+    document.querySelectorAll('#receipt-date').forEach(el => el.textContent = d);
   }
   setDate();
 
+  // ── Number to Words converter (Indian numbering system) ──
+  function numberToWords(num) {
+    num = Math.floor(Number(num));
+    if (isNaN(num) || num === 0) return 'Zero Rupees Only';
+    
+    const a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+    const b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+    
+    if (num.toString().length > 9) return 'Amount Too Large';
+    let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return ''; 
+    let str = '';
+    str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+    str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+    str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+    str += (Number(n[4]) != 0) ? a[Number(n[4])] + 'Hundred ' : '';
+    str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+    return str.trim() ? str.trim() + ' Rupees Only' : 'Zero Rupees Only';
+  }
+
+  // ── Format Date ──
+  function formatDate(dateTimeStr) {
+    if (!dateTimeStr) return '';
+    const date = new Date(dateTimeStr);
+    return date.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+  }
+
   // ── Load Queue from API ──
   async function loadQueue() {
+    if (!currentSlotId) return;
     try {
       const response = await fetch(`${BASE_URL}/api/admin/queue?slotId=${currentSlotId}`);
       const tokens = await response.json();
@@ -331,7 +458,6 @@
     }
   }
 
-  // ── Status → CSS class ──
   function getStatusClass(status) {
     const map = {
       'WAITING':   'waiting',
@@ -343,8 +469,8 @@
     return map[status] || 'waiting';
   }
 
-  // ── Select token — fills form, shows OTP box ──
-  function selectToken(tokenId, name, roll, cls, div, purpose, tokenNumber, event) {
+  // ── Select token — fills form, loads fee details, shows OTP box ──
+  async function selectToken(tokenId, name, roll, cls, div, purpose, tokenNumber, event) {
     currentTokenId = tokenId;
     otpVerified    = false;
 
@@ -359,21 +485,57 @@
     document.getElementById('f-class').value   = cls;
     document.getElementById('f-div').value     = div;
     document.getElementById('f-purpose').value = purpose;
+    
     const select = document.getElementById('slot-select');
     document.getElementById('f-slot').value    = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : '—';
     document.getElementById('f-note').value    = '';
 
-    // update cert ref
-    document.getElementById('cert-ref').innerHTML =
-      'Ref. No: TKIET/CSE/BON/2026/0' + tokenNumber +
-      ' &nbsp;&nbsp; Date: <span id="cert-date">' +
-      document.getElementById('f-date').value + '</span>';
+    // Load fee payment details from backend
+    try {
+      const response = await fetch(`${BASE_URL}/api/admin/fee-payment?tokenId=${tokenId}`);
+      if (response.ok) {
+        const payment = await response.json();
+        const amt = payment.amount || 0;
+        
+        document.getElementById('f-amount').value = '₹' + amt.toLocaleString('en-IN');
+        document.getElementById('f-mode').value   = payment.paymentMode || 'Cash';
+        document.getElementById('f-ref-num').value = payment.referenceNumber || 'None';
+        
+        // update print preview data
+        document.getElementById('receipt-name').textContent = name;
+        document.getElementById('receipt-roll').textContent = roll;
+        document.getElementById('receipt-class').textContent = cls;
+        document.getElementById('receipt-div').textContent = div;
+        document.getElementById('receipt-purpose').textContent = purpose;
+        document.getElementById('receipt-amount').textContent = amt.toLocaleString('en-IN');
+        document.getElementById('receipt-amount-words').textContent = numberToWords(amt);
+        
+        // Update table
+        document.getElementById('receipt-table-particulars').textContent = purpose;
+        document.getElementById('receipt-table-mode').textContent = payment.paymentMode || 'Cash';
+        document.getElementById('receipt-table-ref').textContent = payment.referenceNumber || 'None';
+        document.getElementById('receipt-table-amount').textContent = amt.toLocaleString('en-IN');
 
-    generateCert();
+        if (payment.receiptNumber) {
+          // already paid!
+          document.getElementById('receipt-ref-num-str').textContent = 'Receipt No: ' + payment.receiptNumber;
+          document.querySelectorAll('#receipt-date').forEach(el => el.textContent = formatDate(payment.paidAt));
+          otpVerified = true; // no need to re-verify OTP if already done
+        } else {
+          // pending
+          document.getElementById('receipt-ref-num-str').textContent = 'Receipt No: TKIET/CSE/FEE/2026/0' + tokenNumber;
+          setDate();
+        }
+      } else {
+        resetPaymentFields();
+      }
+    } catch (e) {
+      console.error(e);
+      resetPaymentFields();
+    }
 
     // show OTP box — reset state
     document.getElementById('otp-box').style.display    = 'block';
-    document.getElementById('otp-display').style.display = 'none';
     document.getElementById('otp-input').value           = '';
     document.getElementById('otp-input').style.borderColor = '';
     document.getElementById('otp-message').textContent   = '';
@@ -382,32 +544,22 @@
     document.getElementById('otp-box').scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ── Generate Certificate preview ──
-  function generateCert() {
-    const name    = document.getElementById('f-name').value;
-    const roll    = document.getElementById('f-roll').value;
-    const cls     = document.getElementById('f-class').value;
-    const div     = document.getElementById('f-div').value;
-    const purpose = document.getElementById('f-purpose').value;
-    const year    = document.getElementById('f-year').value;
-    const note    = document.getElementById('f-note').value;
+  function resetPaymentFields() {
+    document.getElementById('f-amount').value = '—';
+    document.getElementById('f-mode').value   = '—';
+    document.getElementById('f-ref-num').value = '—';
+    
+    document.getElementById('receipt-amount').textContent = '0';
+    document.getElementById('receipt-amount-words').textContent = 'Zero';
+    document.getElementById('receipt-table-particulars').textContent = '—';
+    document.getElementById('receipt-table-mode').textContent = '—';
+    document.getElementById('receipt-table-ref').textContent = '—';
+    document.getElementById('receipt-table-amount').textContent = '—';
+  }
 
-    const classMap = {
-      'FE': 'First Year (FE)',
-      'SE': 'Second Year (SE)',
-      'TE': 'Third Year (TE)',
-      'BE': 'Fourth Year (BE)'
-    };
-
-    document.getElementById('cert-name').textContent    = 'Mr. / Ms. ' + name;
-    document.getElementById('cert-roll').textContent    = roll;
-    document.getElementById('cert-class').textContent   = classMap[cls] || cls;
-    document.getElementById('cert-div').textContent     = div;
-    document.getElementById('cert-purpose').textContent = purpose;
-    document.getElementById('cert-year').textContent    = year;
-
-    const noteLine = document.getElementById('cert-note-line');
-    noteLine.innerHTML = note.trim() !== '' ? '<em>Note: ' + note + '</em>' : '';
+  function updateReceiptNote() {
+    const note = document.getElementById('f-note').value.trim();
+    document.getElementById('receipt-note-line').innerHTML = note !== '' ? '<strong>Note:</strong> ' + note : '';
   }
 
   // ── Send OTP ──
@@ -428,18 +580,12 @@
         return;
       }
 
-      const token = await response.json();
-
-      // show OTP on screen
-      document.getElementById('otp-message').style.color = '#1a73e8';
-      document.getElementById('otp-message').textContent =
-    '✅ OTP sent! Ask student to check their portal and tell you the OTP.';
-      document.getElementById('otp-message').style.color   = '#1a73e8';
-      document.getElementById('otp-message').textContent   = '📋 OTP generated. Ask student to verify.';
+      document.getElementById('otp-message').style.color   = '#10b981';
+      document.getElementById('otp-message').textContent   = '📋 OTP generated. Ask student to check their dashboard.';
 
     } catch (error) {
       console.error('Error sending OTP:', error);
-      alert('Could not generate OTP. Is server running?');
+      alert('Could not generate OTP.');
     }
   }
 
@@ -471,11 +617,10 @@
         return;
       }
 
-      // OTP verified!
       otpVerified = true;
       document.getElementById('otp-input').style.borderColor = '#28a745';
       document.getElementById('otp-message').style.color     = '#28a745';
-      document.getElementById('otp-message').textContent     = '✅ OTP Verified! You can now Mark Done.';
+      document.getElementById('otp-message').textContent     = '✅ OTP Verified! You can now mark payment as done.';
 
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -483,14 +628,13 @@
     }
   }
 
-  // ── Mark Done ──
+  // ── Mark Done (Calls API, which triggers final receipt generation) ──
   async function markDone() {
     if (!currentTokenId) {
       alert('Please select a student from the queue first.');
       return;
     }
 
-    // block if OTP not verified
     if (!otpVerified) {
       alert('⚠ Please verify OTP first before marking done.');
       document.getElementById('otp-box').scrollIntoView({ behavior: 'smooth' });
@@ -504,13 +648,23 @@
       );
 
       if (!response.ok) {
-        alert('Failed to mark as done.');
+        alert('Failed to mark token as done.');
         return;
       }
 
-      // reset everything
-      currentTokenId = null;
-      otpVerified    = false;
+      const token = await response.json();
+      
+      // Load payment details to update the printed receipt number
+      const payResponse = await fetch(`${BASE_URL}/api/admin/fee-payment?tokenId=${currentTokenId}`);
+      if (payResponse.ok) {
+        const payment = await payResponse.json();
+        document.getElementById('receipt-ref-num-str').textContent = 'Receipt No: ' + payment.receiptNumber;
+        document.querySelectorAll('#receipt-date').forEach(el => el.textContent = formatDate(payment.paidAt));
+      }
+
+      alert('Payment confirmed and marked as done!');
+      
+      // hide OTP box
       document.getElementById('otp-box').style.display = 'none';
 
       await loadQueue();
@@ -561,7 +715,7 @@
 
       document.getElementById('stat-waiting').textContent  = stats.waiting  || 0;
       document.getElementById('stat-done').textContent     = stats.done     || 0;
-      document.getElementById('stat-printing').textContent = stats.serving  || 0;
+      document.getElementById('stat-serving').textContent = stats.serving  || 0;
 
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -571,7 +725,7 @@
   // ── Load slots dynamically ──
   async function loadSlots() {
     try {
-      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=1`);
+      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=2`);
       const slots = await response.json();
       const select = document.getElementById('slot-select');
       select.innerHTML = '';

@@ -34,10 +34,29 @@ public class StudentController {
     // POST /api/student/book
     @PostMapping("/book")
     public Token bookToken(@RequestBody Map<String, String> body) {
+        String rollNumber = body.get("rollNumber");
+        Long slotId = Long.parseLong(body.get("slotId"));
+        String purpose = body.get("purpose");
+        
+        Double amount = null;
+        if (body.get("amount") != null && !body.get("amount").trim().isEmpty()) {
+            try {
+                amount = Double.parseDouble(body.get("amount"));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        
+        String paymentMode = body.get("paymentMode");
+        String referenceNumber = body.get("referenceNumber");
+        
         return tokenService.bookToken(
-                body.get("rollNumber"),
-                Long.parseLong(body.get("slotId")),
-                body.get("purpose")
+                rollNumber,
+                slotId,
+                purpose,
+                amount,
+                paymentMode,
+                referenceNumber
         );
     }
 
