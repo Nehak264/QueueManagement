@@ -31,6 +31,8 @@ public class Student {
 
     private String email;
 
+    private String mobile;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

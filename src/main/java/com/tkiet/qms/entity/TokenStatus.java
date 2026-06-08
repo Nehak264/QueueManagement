@@ -1,9 +1,9 @@
 package com.tkiet.qms.entity;
 
 public enum TokenStatus {
-    WAITING,    // student booked, in queue
-    SERVING,    // currently at counter
-    DONE,       // completed
-    SKIPPED,    // admin skipped them
-    CANCELLED   // student cancelled
+    PENDING,    // student applied, waiting for admin approval
+    APPROVED,   // admin approved, certificate sent
+    REJECTED,   // admin rejected
+    CANCELLED ,  // student cancelled
+    DONE
 }

@@ -1,50 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>QMS Student Registration</title>
+    <title>TKIET | Student Registration</title>
     <link rel="stylesheet" href="student_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
+        .otp-verified-tick { color: #28a745; font-weight: bold; display: none; margin-left: 10px; }
+        .hidden { display: none; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .input-group-inline { display: flex; gap: 10px; align-items: center; }
+        .input-group-inline input { flex: 1; }
+        .field-error { font-size: 11px; color: #dc3545; margin-top: 4px; display: none; }
+        input.invalid { border-color: #dc3545 !important; }
+        input.valid   { border-color: #28a745 !important; }
+    </style>
 </head>
 <body>
 
 <div class="navbar">
     <div>
-        <h1>🎓 Student Registration</h1>
-        <p>TKIET Warananangar — CSE Department</p>
+        <h1>🎓 Bonafide Online Portal</h1>
+        <p>TKIET Warananangar — Computer Science &amp; Engineering</p>
     </div>
 </div>
 
-<div class="container" style="max-width:600px">
+<div class="container" style="max-width:650px">
 
-    <!-- SUCCESS MESSAGE -->
-    <div id="success-msg" style="display:none; background:#d4edda; border:1.5px solid #28a745;
-       border-radius:10px; padding:20px 24px; margin-bottom:20px; text-align:center;">
-        <p style="font-size:20px; font-weight:700; color:#28a745;">✅ Registered Successfully!</p>
-        <p style="font-size:13px; color:#555; margin-top:8px;">
-            Your details have been saved. You can now book a token.
-        </p>
-        <a href="student.html">
-            <button class="btn btn-blue" style="margin-top:16px">
-                🎫 Go to Book Token
-            </button>
+    <div id="success-msg" class="hidden" style="background:#d4edda; border:1px solid #28a745; border-radius:15px; padding:30px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.05);">
+        <p style="font-size:24px; font-weight:700; color:#28a745;">✅ Registration Complete!</p>
+        <p style="color:#555; margin:15px 0;">You are now registered in the TKIET CSE online database.</p>
+        <a href="Student.html">
+            <button class="btn btn-blue" style="width:100%">Go to Application Dashboard</button>
         </a>
     </div>
 
-    <!-- REGISTRATION FORM -->
     <div class="box" id="reg-form-box">
-        <h2>📝 Student Registration Form</h2>
-        <p style="font-size:12px; color:#777; margin-bottom:20px;">
-            Fill your details below. This information will be stored in the system.
-        </p>
+        <h2 style="margin-bottom:10px">📝 Student Registration</h2>
+        <p style="font-size:13px; color:#666; margin-bottom:25px;">Provide your academic and contact details to get started.</p>
 
         <div class="form-row">
             <div class="form-group">
                 <label>Full Name *</label>
-                <input type="text" id="reg-name" placeholder="e.g. Neha Kulkarni" />
+                <input type="text" id="reg-name" placeholder="Full Student Name" oninput="clearFieldError('reg-name')" />
+                <span class="field-error" id="err-name">Name is required.</span>
             </div>
             <div class="form-group">
                 <label>Roll Number *</label>
-                <input type="text" id="reg-roll" placeholder="e.g. 2201234" />
+                <!-- FIX #3: Added pattern + real-time validation -->
+                <input type="text" id="reg-roll" placeholder="7-digit Roll No." maxlength="7"
+                       oninput="validateRoll(this)" />
+                <span class="field-error" id="err-roll">Must be exactly 7 digits.</span>
             </div>
         </div>
 
@@ -53,98 +60,244 @@
                 <label>Class *</label>
                 <select id="reg-class">
                     <option value="">Select Class</option>
-                    <option value="FE">FE — First Year</option>
-                    <option value="SE">SE — Second Year</option>
-                    <option value="TE">TE — Third Year</option>
-                    <option value="BE">BE — Fourth Year</option>
+                    <option value="FE">FE (First Year)</option>
+                    <option value="SE">SE (Second Year)</option>
+                    <option value="TE">TE (Third Year)</option>
+                    <option value="BE">BE (Fourth Year)</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Division *</label>
                 <select id="reg-div">
                     <option value="">Select Division</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
+                    <option value="A">Division A</option>
+                    <option value="B">Division B</option>
                 </select>
             </div>
         </div>
 
         <div class="form-group">
             <label>Email Address *</label>
-            <input type="email" id="reg-email" placeholder="e.g. neha@tkiet.edu" />
+            <input type="email" id="reg-email" placeholder="student@tkiet.edu" oninput="clearFieldError('reg-email')" />
+            <span class="field-error" id="err-email">Enter a valid email address.</span>
         </div>
 
-        <p id="reg-error" style="font-size:12px; color:#e84455; margin-bottom:10px;"></p>
-
-        <div style="display:flex; gap:10px; margin-top:10px">
-            <button class="btn btn-blue" onclick="registerStudent()">
-                ✅ Register
-            </button>
-            <a href="student.html">
-                <button class="btn btn-outline">
-                    Already Registered? Book Token
-                </button>
-            </a>
+        <div class="form-group">
+            <label>Mobile Number *</label>
+            <div class="input-group-inline">
+                <input type="text" id="reg-mobile" placeholder="10-digit Mobile No." maxlength="10"
+                       oninput="validateMobile(this)" />
+                <button class="btn btn-blue" id="btn-send-otp" onclick="sendOtp()" style="padding:10px 15px; font-size:12px">Send OTP</button>
+            </div>
+            <span class="field-error" id="err-mobile">Must be exactly 10 digits.</span>
         </div>
 
+        <div class="form-group hidden" id="otp-group">
+            <label>Enter 6-Digit OTP *</label>
+            <div class="input-group-inline">
+                <input type="text" id="reg-otp" placeholder="XXXX" maxlength="6" />
+                <button class="btn btn-blue" onclick="verifyOtp()" style="padding:10px 15px; font-size:12px">Verify OTP</button>
+                <span id="otp-tick" class="otp-verified-tick">✅ Verified</span>
+            </div>
+        </div>
+
+        <p id="reg-error" style="font-size:12px; color:#e84455; margin:15px 0;"></p>
+
+        <button class="btn btn-blue" id="btn-register" onclick="registerStudent()" disabled style="width:100%; margin-top:10px">
+            ✅ Create Account
+        </button>
+
+        <p style="text-align:center; font-size:13px; margin-top:20px;">
+            Already registered? <a href="Student.html" style="color:#007bff; text-decoration:none; font-weight:600;">Login here</a>
+        </p>
     </div>
 
     <div class="footer">
-        QMS · TKIET Warananangar · CSE Dept · 2025–26
+        &copy; 2026 TKIET Warananangar · CSE Department · Online Bonafide System
     </div>
-
 </div>
 
 <script>
-    const BASE_URL = "http://10.73.124.51:8080";
+    const BASE_URL = "http://localhost:8080";
+    let isOtpVerified = false;
 
-    async function registerStudent() {
+    // ── FIX #3: Real-time roll number validation ──
+    function validateRoll(input) {
+        const val = input.value.replace(/\D/g, ''); // strip non-digits
+        input.value = val;
+        const err = document.getElementById('err-roll');
+        if (val.length === 7) {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            err.style.display = 'none';
+        } else {
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+            err.style.display = 'block';
+        }
+    }
 
-      const name  = document.getElementById('reg-name').value.trim();
-      const roll  = document.getElementById('reg-roll').value.trim();
-      const cls   = document.getElementById('reg-class').value;
-      const div   = document.getElementById('reg-div').value;
-      const email = document.getElementById('reg-email').value.trim();
+    // ── Real-time mobile validation ──
+    function validateMobile(input) {
+        const val = input.value.replace(/\D/g, '');
+        input.value = val;
+        const err = document.getElementById('err-mobile');
+        if (val.length === 10) {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            err.style.display = 'none';
+        } else {
+            input.classList.remove('valid');
+            if (val.length > 0) {
+                input.classList.add('invalid');
+                err.style.display = 'block';
+            }
+        }
+    }
 
-      // validate all fields
-      if (!name || !roll || !cls || !div || !email) {
-        document.getElementById('reg-error').textContent =
-          '⚠ Please fill all fields before registering.';
+    function clearFieldError(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('invalid');
+    }
+
+    // ── Send OTP ──
+    async function sendOtp() {
+
+    const email = document.getElementById('reg-email').value.trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address');
         return;
-      }
+    }
 
-      document.getElementById('reg-error').textContent = '';
+    const btn = document.getElementById('btn-send-otp');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
 
-      try {
-        const response = await fetch(`${BASE_URL}/api/student/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name:        name,
-            rollNumber:  roll,
-            className:   cls,
-            division:    div,
-            email:       email
-          })
+    try {
+        const response = await fetch(`${BASE_URL}/api/student/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          document.getElementById('reg-error').textContent =
-            '❌ ' + (error.message || 'Registration failed. Roll number may already exist.');
-          return;
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('otp-group').classList.remove('hidden');
+            btn.textContent = 'Resend OTP';
+            alert('OTP sent to your email successfully!');
+        } else {
+            alert('❌ ' + (data.message || 'Failed to send OTP'));
+            btn.textContent = 'Send OTP';
         }
 
-        // show success
-        document.getElementById('reg-form-box').style.display = 'none';
-        document.getElementById('success-msg').style.display  = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+        alert('❌ Server error: ' + e.message);
+        btn.textContent = 'Send OTP';
+    } finally {
+        btn.disabled = false;
+    }
+}
 
-      } catch (error) {
-        console.error('Registration error:', error);
-        document.getElementById('reg-error').textContent =
-          '❌ Could not connect to server. Is Spring Boot running?';
-      }
+    // ── Verify OTP ──
+    async function verifyOtp() {
+
+    const email = document.getElementById('reg-email').value.trim();
+    const otp = document.getElementById('reg-otp').value.trim();
+
+    if (otp.length !== 6) {
+        alert('Enter 6-digit OTP');
+        return;
+    }
+
+    try {
+
+        const response = await fetch(`${BASE_URL}/api/student/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp })
+        });
+
+        const data = await response.json();
+
+        if (data.verified) {
+
+            isOtpVerified = true;
+
+            document.getElementById('otp-tick').style.display = 'inline';
+
+            document.getElementById('btn-register').disabled = false;
+
+            document.getElementById('reg-otp').disabled = true;
+            document.getElementById('reg-email').disabled = true;
+            document.getElementById('btn-send-otp').disabled = true;
+
+        } else {
+            alert('❌ Invalid OTP');
+        }
+
+    } catch (e) {
+        alert('❌ Server error: ' + e.message);
+    }
+}
+    // ── Register student ──
+    async function registerStudent() {
+        const name   = document.getElementById('reg-name').value.trim();
+        const roll   = document.getElementById('reg-roll').value.trim();
+        const cls    = document.getElementById('reg-class').value;
+        const div    = document.getElementById('reg-div').value;
+        const email  = document.getElementById('reg-email').value.trim();
+        const mobile = document.getElementById('reg-mobile').value.trim();
+        const errEl  = document.getElementById('reg-error');
+
+        // Client-side validation
+        if (!name) {
+            errEl.textContent = '⚠ Full Name is required.'; return;
+        }
+        // FIX #3: Enforce 7-digit roll number before sending to server
+        if (!/^\d{7}$/.test(roll)) {
+            errEl.textContent = '⚠ Roll number must be exactly 7 digits.'; return;
+        }
+        if (!cls) {
+            errEl.textContent = '⚠ Please select a class.'; return;
+        }
+        if (!div) {
+            errEl.textContent = '⚠ Please select a division.'; return;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errEl.textContent = '⚠ Enter a valid email address.'; return;
+        }
+        if (!isOtpVerified) {
+            errEl.textContent = '⚠ Please verify your mobile number via OTP.'; return;
+        }
+        errEl.textContent = '';
+
+        const btn = document.getElementById('btn-register');
+        btn.disabled = true;
+        btn.textContent = 'Registering…';
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/student/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, rollNumber: roll, className: cls, division: div, email, mobile })
+            });
+
+            if (response.ok) {
+                document.getElementById('reg-form-box').classList.add('hidden');
+                document.getElementById('success-msg').classList.remove('hidden');
+            } else {
+                const err = await response.json();
+                errEl.textContent = '❌ ' + (err.message || 'Registration failed');
+                btn.disabled = false;
+                btn.textContent = '✅ Create Account';
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Connection Error';
+            btn.disabled = false;
+            btn.textContent = '✅ Create Account';
+        }
     }
 </script>
 

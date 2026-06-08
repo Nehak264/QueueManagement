@@ -1,533 +1,307 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>QMS Student Portal</title>
-  <link rel="stylesheet" href="student_style.css">
+    <meta charset="UTF-8">
+    <title>TKIET | Student Application Dashboard</title>
+    <link rel="stylesheet" href="student_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
+        .hidden { display: none; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .status-pending  { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .login-box { max-width: 450px; margin: 40px auto; }
+        .dashboard-container { max-width: 900px; margin: 0 auto; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <div class="navbar">
-  <div>
-    <h1>🎫 QMS Student Portal</h1>
-    <p>TKIET Warananangar — CSE Department</p>
-  </div>
-  <div style="text-align:right">
-    <p style="font-weight:600" id="nav-name">Student Portal</p>
-    <p>TKIET Warananangar — CSE Dept</p>
-  </div>
+    <div>
+        <h1>🎓 Bonafide Online Portal</h1>
+        <p>TKIET Warananangar — Computer Science &amp; Engineering</p>
+    </div>
+    <!-- FIX #5: nav now shows real student name -->
+    <div style="text-align:right" id="student-info-nav" class="hidden">
+        <p style="font-weight:600" id="nav-student-name">—</p>
+        <p id="nav-student-roll" style="font-size:12px; opacity:.8;">—</p>
+    </div>
 </div>
 
 <div class="container">
 
-  <!-- TOKEN RESULT (shown after booking) -->
-  <div class="token-result" id="tokenResult">
-    <p>✅ Your token has been booked!</p>
-    <div class="big-token" id="tokenNumber">#—</div>
-    <p id="tokenCounter" style="font-weight:600; font-size:14px"></p>
-    <p id="tokenSlot" style="color:#777; font-size:13px"></p>
-    <div class="info-row">
-      <div class="info-box">
-        <div class="val" id="tokenAhead">—</div>
-        <div class="lbl">ahead of you</div>
-      </div>
-      <div class="info-box">
-        <div class="val" id="tokenWait">—</div>
-        <div class="lbl">est. wait</div>
-      </div>
-      <div class="info-box">
-        <div class="val" id="tokenServing">—</div>
-        <div class="lbl">now serving</div>
-      </div>
-    </div>
-  </div>
+    <!-- LOGIN SECTION -->
+    <div id="login-section" class="box login-box">
+        <h2 style="text-align:center; margin-bottom:20px;">Verification Login</h2>
 
-  <!-- OTP DISPLAY — shown when admin sends OTP -->
-  <div id="otp-result" style="display:none; background:#fff3cd; border:1.5px solid #ffc107;
-       border-radius:10px; padding:20px 24px; margin-bottom:20px; text-align:center;">
-    <p style="font-size:13px; color:#856404; margin-bottom:8px; font-weight:600;">
-      🔐 Your OTP for Counter Verification
-    </p>
-    <div id="student-otp-value" style="font-size:52px; font-weight:700; color:#1a73e8;
-         letter-spacing:14px; margin:10px 0;">—</div>
-    <p style="font-size:12px; color:#856404;">
-      Show this OTP to the admin at the counter
-    </p>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('bonafide', this)">
-      📄 Bonafide Certificate
-    </button>
-    <button class="tab" onclick="switchTab('fees', this)">
-      💰 Fees Submission
-    </button>
-  </div>
-
-  <!-- ══════ BONAFIDE SECTION ══════ -->
-  <div class="section active" id="section-bonafide">
-
-    <div class="timing-banner bonafide">
-      🕘 <strong>Bonafide Counter Hours:</strong>
-      &nbsp;9:00 AM – 11:00 AM &nbsp;and&nbsp; 2:00 PM – 4:00 PM
-      &nbsp;(Mon – Fri)
-    </div>
-
-    <div class="box">
-      <h2>📅 Select Time Slot — Bonafide</h2>
-
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#d4edda; border:1.5px solid #28a745"></div>
-          Available
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#f8f8f8; border:1.5px solid #ccc"></div>
-          Closed / Full
-        </div>
-      </div>
-
-      <div class="slots-grid" id="bonafide-slots">
-        <p style="color:#999; font-size:13px">Loading slots...</p>
-      </div>
-
-      <p style="font-size:12px; color:#e84455; margin-bottom:14px" id="bonafide-slot-error"></p>
-
-      <!-- BONAFIDE FORM -->
-      <div id="bonafide-form" style="display:none">
-        <hr style="margin-bottom:16px; border-color:#f0f0f0">
-        <h3 style="font-size:14px; margin-bottom:14px">📝 Bonafide Request Details</h3>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="b-name" placeholder="Enter your full name" />
-          </div>
-          <div class="form-group">
+        <div class="form-group">
             <label>Roll Number</label>
-            <input type="text" id="b-roll" placeholder="e.g. 2201234" />
-          </div>
+            <input type="text" id="login-roll" placeholder="Enter your 7-digit Roll No." maxlength="7" />
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Class / Division</label>
-            <input type="text" id="b-class" placeholder="e.g. SE – B" />
-          </div>
-          <div class="form-group">
-            <label>Purpose of Bonafide</label>
-            <select id="bonafide-purpose">
-              <option>Bank Account Opening</option>
-              <option>Passport Application</option>
-              <option>Scholarship Form</option>
-              <option>Visa Application</option>
-              <option>Other</option>
-            </select>
-          </div>
+        <div id="otp-login-group" class="hidden">
+            <div class="form-group">
+                <label>Verification OTP</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="login-otp" placeholder="XXXXXX" maxlength="6" />
+                    <button class="btn btn-blue" id="btn-verify-otp" onclick="verifyLoginOtp()">Verify &amp; Enter</button>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group" style="margin-bottom:16px">
-          <label>Additional Note (optional)</label>
-          <textarea id="bonafide-note" placeholder="Any special instructions..."></textarea>
-        </div>
+        <button class="btn btn-blue" id="btn-send-login-otp" onclick="sendLoginOtp()" style="width:100%; margin-top:10px;">
+            Send Access OTP
+        </button>
 
-        <div style="display:flex; gap:10px">
-          <button class="btn btn-blue" onclick="submitRequest('bonafide')">
-            🎫 Book Token
-          </button>
-          <button class="btn btn-outline" onclick="cancelForm('bonafide')">
-            Cancel
-          </button>
-        </div>
-      </div>
+        <p id="login-error" style="font-size:12px; color:#dc3545; margin-top:10px; text-align:center;"></p>
 
-    </div>
-  </div>
-
-  <!-- ══════ FEES SECTION ══════ -->
-  <div class="section" id="section-fees">
-
-    <div class="timing-banner fees">
-      🕚 <strong>Fees Counter Hours:</strong>
-      &nbsp;11:00 AM – 1:00 PM &nbsp;and&nbsp; 1:00 PM – 2:00 PM
-      &nbsp;(Mon – Sat)
+        <p style="text-align:center; font-size:13px; margin-top:20px;">
+            New student? <a href="register.html" style="color:#007bff; text-decoration:none; font-weight:600;">Register here</a>
+        </p>
     </div>
 
-    <div class="box">
-      <h2>📅 Select Time Slot — Fees Submission</h2>
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard-section" class="dashboard-container hidden">
 
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#d4edda; border:1.5px solid #28a745"></div>
-          Available
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#f8f8f8; border:1.5px solid #ccc"></div>
-          Closed / Full
-        </div>
-      </div>
+        <div class="box">
+            <h2>📄 New Bonafide Application</h2>
+            <p style="font-size:13px; color:#666; margin-bottom:20px;">Apply for a new certificate. Usually processed within 24–48 hours.</p>
 
-      <div class="slots-grid" id="fees-slots">
-        <p style="color:#999; font-size:13px">Loading slots...</p>
-      </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Purpose of Bonafide</label>
+                    <select id="app-purpose">
+                        <option>Bank Account Opening</option>
+                        <option>Passport Application</option>
+                        <option>Scholarship Form</option>
+                        <option>Visa Application</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year</label>
+                    <input type="text" id="app-year" value="2025-2026" />
+                </div>
+            </div>
 
-      <p style="font-size:12px; color:#e84455; margin-bottom:14px" id="fees-slot-error"></p>
+            <p id="apply-error" style="font-size:12px; color:#dc3545; margin-top:8px;"></p>
 
-      <!-- FEES FORM -->
-      <div id="fees-form" style="display:none">
-        <hr style="margin-bottom:16px; border-color:#f0f0f0">
-        <h3 style="font-size:14px; margin-bottom:14px">📝 Fees Submission Details</h3>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="f-name" placeholder="Enter your full name" />
-          </div>
-          <div class="form-group">
-            <label>Roll Number</label>
-            <input type="text" id="f-roll" placeholder="e.g. 2201234" />
-          </div>
+            <!-- FIX #6: Button disabled during submission to prevent duplicates -->
+            <button class="btn btn-blue" id="btn-submit-app" onclick="submitApplication()" style="margin-top:10px;">
+                🚀 Submit Application
+            </button>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Fees Type</label>
-            <select id="fees-type">
-              <option>Tuition Fees</option>
-              <option>Exam Fees</option>
-              <option>Library Fees</option>
-              <option>Development Fees</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Amount (₹)</label>
-            <input type="number" id="fees-amount" placeholder="Enter amount" />
-          </div>
+        <div class="box">
+            <h2>📋 My Applications</h2>
+            <div id="applications-list" style="margin-top:15px;">
+                <p style="color:#999; font-size:13px; text-align:center; padding:20px;">Loading…</p>
+            </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Payment Mode</label>
-            <select id="fees-payment-mode">
-              <option>Cash</option>
-              <option>Online / UPI</option>
-              <option>DD (Demand Draft)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Reference No (if any)</label>
-            <input type="text" id="fees-ref" placeholder="Optional" />
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px">
-          <button class="btn btn-blue" onclick="submitRequest('fees')">
-            🎫 Book Token
-          </button>
-          <button class="btn btn-outline" onclick="cancelForm('fees')">
-            Cancel
-          </button>
-        </div>
-      </div>
 
     </div>
-  </div>
 
-  <!-- MY REQUESTS -->
-  <div class="box">
-    <h2>📋 My Requests</h2>
-    <div id="my-requests-list">
-      <p style="color:#999; font-size:13px; padding:12px 0">Loading...</p>
+    <div class="footer">
+        &copy; 2026 TKIET Warananangar · CSE Department · Online Bonafide System
     </div>
-  </div>
-
-  <div class="footer">
-    QMS Student Portal · TKIET Warananangar · CSE Dept · 2025–26
-  </div>
-
 </div>
 
 <script>
+    const BASE_URL = "http://localhost:8080";
+    let currentStudent = null; // stores { rollNumber, name, className, division }
 
-  const BASE_URL = "http://localhost:8080";
-  const STUDENT_ID = 1;
+    // ── Send login OTP ──
+    async function sendLoginOtp() {
+        const roll = document.getElementById('login-roll').value.trim();
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = '';
 
-  let selectedSlot   = { bonafide: null, fees: null };
-  let selectedSlotId = { bonafide: null, fees: null };
+        if (!roll) { errEl.textContent = 'Enter your Roll Number.'; return; }
 
-  // ── Tab switching ──
-  function switchTab(type, btn) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById('section-' + type).classList.add('active');
-    document.getElementById('tokenResult').classList.remove('show');
-  }
+        const btn = document.getElementById('btn-send-login-otp');
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
 
-  // ── Load slots ──
-  async function loadSlots() {
-    await loadSlotsForCounter(1, 'bonafide-slots', 'bonafide');
-    await loadSlotsForCounter(2, 'fees-slots', 'fees');
-  }
+        try {
+            const response = await fetch(`${BASE_URL}/api/student/send-login-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rollNumber: roll })
+            });
 
-  async function loadSlotsForCounter(counterId, gridId, type) {
-    try {
-      const response = await fetch(`${BASE_URL}/api/student/slots?counterId=${counterId}`);
-      const slots = await response.json();
-
-      const grid = document.getElementById(gridId);
-      grid.innerHTML = '';
-
-      if (slots.length === 0) {
-        grid.innerHTML = '<p style="color:#999; font-size:13px">No slots available today.</p>';
-        return;
-      }
-
-      slots.forEach(slot => {
-        const isFull     = slot.bookedCount >= slot.maxCapacity;
-        const isDisabled = !slot.active || isFull;
-
-        const div = document.createElement('div');
-        div.className = 'slot' + (isDisabled ? ' disabled' : '');
-
-        const start = slot.startTime.substring(0, 5);
-        const end   = slot.endTime.substring(0, 5);
-        const label = `${start} – ${end}`;
-
-        div.innerHTML = `
-          <div class="slot-time">${label}</div>
-          <div class="slot-count">${slot.bookedCount} / ${slot.maxCapacity} booked</div>
-          <span class="slot-badge ${isFull ? 'closed' : 'open'}">
-            ${isFull ? 'Full' : 'Open'}
-          </span>
-        `;
-
-        if (!isDisabled) {
-          div.onclick = () => selectSlot(div, type, label, slot.bookedCount, slot.maxCapacity, slot.id);
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                document.getElementById('otp-login-group').classList.remove('hidden');
+                btn.classList.add('hidden');
+            } else {
+                errEl.textContent = '❌ ' + (data.message || 'Student not registered.');
+                btn.disabled = false;
+                btn.textContent = 'Send Access OTP';
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Connection error: ' + e.message;
+            btn.disabled = false;
+            btn.textContent = 'Send Access OTP';
         }
-
-        grid.appendChild(div);
-      });
-
-    } catch (error) {
-      console.error('Failed to load slots:', error);
-      document.getElementById(gridId).innerHTML =
-        '<p style="color:red; font-size:13px">Could not load slots. Is the server running?</p>';
-    }
-  }
-
-  // ── Select a slot ──
-  function selectSlot(el, type, label, booked, total, slotId) {
-    document.querySelectorAll('#' + type + '-slots .slot')
-      .forEach(s => s.classList.remove('selected'));
-    el.classList.add('selected');
-
-    selectedSlot[type]   = label;
-    selectedSlotId[type] = slotId;
-
-    document.getElementById(type + '-form').style.display = 'block';
-    document.getElementById(type + '-slot-error').textContent = '';
-  }
-
-  // ── Cancel form ──
-  function cancelForm(type) {
-    document.getElementById(type + '-form').style.display = 'none';
-    document.querySelectorAll('#' + type + '-slots .slot')
-      .forEach(s => s.classList.remove('selected'));
-    selectedSlot[type]   = null;
-    selectedSlotId[type] = null;
-  }
-
-  // ── Submit booking — calls real API ──
-  async function submitRequest(type) {
-
-    if (!selectedSlotId[type]) {
-      document.getElementById(type + '-slot-error')
-        .textContent = '⚠ Please select a time slot first.';
-      return;
     }
 
-    const nameInput = document.getElementById(type === 'bonafide' ? 'b-name' : 'f-name');
-    const rollInput = document.getElementById(type === 'bonafide' ? 'b-roll' : 'f-roll');
+    // ── Verify login OTP ──
+    async function verifyLoginOtp() {
+    const roll = document.getElementById('login-roll').value.trim();
+    const otp  = document.getElementById('login-otp').value.trim();
+    const errEl = document.getElementById('login-error');
 
-    // validate
-    if (!nameInput.value.trim()) {
-      nameInput.style.borderColor = '#e84455';
-      nameInput.focus();
-      alert('Please enter your full name.');
-      return;
-    }
-    if (!rollInput.value.trim()) {
-      rollInput.style.borderColor = '#e84455';
-      rollInput.focus();
-      alert('Please enter your roll number.');
-      return;
-    }
-
-    // reset borders
-    nameInput.style.borderColor = '';
-    rollInput.style.borderColor = '';
-
-    const purpose = type === 'bonafide'
-      ? document.getElementById('bonafide-purpose').value
-      : document.getElementById('fees-type').value;
-
-    // update navbar name
-    document.getElementById('nav-name').textContent = nameInput.value.trim();
-
-    try {
-      const payload = {
-        rollNumber: rollInput.value.trim(),
-        slotId:     String(selectedSlotId[type]),
-        purpose:    purpose
-      };
-
-      if (type === 'fees') {
-        payload.amount = document.getElementById('fees-amount').value.trim();
-        payload.paymentMode = document.getElementById('fees-payment-mode').value;
-        payload.referenceNumber = document.getElementById('fees-ref').value.trim();
-      }
-
-      const response = await fetch(`${BASE_URL}/api/student/book`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert('Booking failed: ' + (error.message || 'Student not found or slot is full.'));
+    if (otp.length !== 6) {
+        errEl.textContent = 'Enter 6-digit OTP.';
         return;
-      }
-
-      const token = await response.json();
-
-      // show token result
-      const ahead = Math.max(0, token.tokenNumber - 1);
-      document.getElementById('tokenNumber').textContent  = '#' + token.tokenNumber;
-      document.getElementById('tokenCounter').textContent =
-        type === 'bonafide' ? '📄 Bonafide Counter' : '💰 Fees Counter';
-      document.getElementById('tokenSlot').textContent    = 'Time Slot: ' + selectedSlot[type];
-      document.getElementById('tokenAhead').textContent   = ahead;
-      document.getElementById('tokenWait').textContent    = '~' + (ahead * 3) + 'm';
-      document.getElementById('tokenServing').textContent = '#' + Math.max(1, token.tokenNumber - ahead);
-
-      document.getElementById('tokenResult').classList.add('show');
-      document.getElementById(type + '-form').style.display = 'none';
-
-      loadSlots();
-      loadMyRequests();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    } catch (error) {
-      console.error('Booking error:', error);
-      alert('Could not connect to server. Is Spring Boot running?');
     }
-  }
 
-  // ── Load My Requests ──
-  async function loadMyRequests() {
-    try {
-      const response = await fetch(`${BASE_URL}/api/student/tokens?studentId=${STUDENT_ID}`);
-      const tokens = await response.json();
+        const btn = document.getElementById('btn-verify-otp');
+        btn.disabled = true;
+        btn.textContent = 'Verifying…';
 
-      const container = document.getElementById('my-requests-list');
+        try {
+            const response = await fetch(`${BASE_URL}/api/student/verify-login-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rollNumber: roll, otp })
+            });
+            const data = await response.json();
 
-      if (tokens.length === 0) {
-        container.innerHTML =
-          '<p style="color:#999; font-size:13px; padding:12px 0">No requests yet.</p>';
-        return;
-      }
-
-      container.innerHTML = tokens.map(token => `
-        <div class="request-item">
-          <div>
-            <strong>#${token.tokenNumber} — ${token.slot.counter.name}</strong>
-            <div style="font-size:11px; color:#777; margin-top:3px">
-              ${token.slot.startTime.substring(0,5)} – ${token.slot.endTime.substring(0,5)}
-              &nbsp;·&nbsp; ${token.slot.slotDate}
-              &nbsp;·&nbsp; ${token.purpose}
-            </div>
-          </div>
-          <span class="req-badge ${getBadgeClass(token.status)}">
-            ${getBadgeLabel(token.status)}
-          </span>
-        </div>
-      `).join('');
-
-    } catch (error) {
-      console.error('Failed to load requests:', error);
-      document.getElementById('my-requests-list').innerHTML =
-        '<p style="color:red; font-size:13px">Could not load requests.</p>';
-    }
-  }
-
-  // ── Badge helpers ──
-  function getBadgeClass(status) {
-    const map = {
-      'WAITING':   'pending',
-      'SERVING':   'pending',
-      'DONE':      'approved',
-      'SKIPPED':   'rejected',
-      'CANCELLED': 'rejected'
-    };
-    return map[status] || 'pending';
-  }
-
-  function getBadgeLabel(status) {
-    const map = {
-      'WAITING':   '⏳ Waiting',
-      'SERVING':   '🔵 Serving',
-      'DONE':      '✓ Done',
-      'SKIPPED':   '⏭ Skipped',
-      'CANCELLED': '✗ Cancelled'
-    };
-    return map[status] || status;
-  }
-
-  // ── On page load ──
-  loadSlots();
-  loadMyRequests();
-
-  // ── Poll for OTP every 5 seconds ──
-  // ── Poll for OTP every 5 seconds ──
-async function checkForOtp() {
-    try {
-        // get roll number from whichever form is filled
-        const rollInput = document.getElementById('b-roll').value.trim() ||
-                          document.getElementById('f-roll').value.trim();
-
-        if (!rollInput) return;  // no roll number entered yet — skip
-
-        const response = await fetch(`${BASE_URL}/api/student/tokens/byRoll?rollNumber=${rollInput}`);
-
-        if (!response.ok) return;
-
-        const tokens = await response.json();
-
-        if (tokens.length === 0) return;
-
-        // find latest WAITING token with OTP
-        const latest = tokens.find(t => t.status === 'WAITING' && t.otp !== null);
-
-        if (latest && latest.otp) {
-            document.getElementById('otp-result').style.display = 'block';
-            document.getElementById('student-otp-value').textContent = latest.otp;
-        } else {
-            document.getElementById('otp-result').style.display = 'none';
+            if (data.verified) {
+                // FIX #5: Backend now returns student info; store and display it
+                loginSuccess(data);
+            } else {
+                errEl.textContent = '❌ ' + (data.message || 'Invalid OTP.');
+                btn.disabled = false;
+                btn.textContent = 'Verify & Enter';
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Connection error: ' + e.message;
+            btn.disabled = false;
+            btn.textContent = 'Verify & Enter';
         }
-
-    } catch (error) {
-        console.error('OTP check failed:', error);
     }
-}
 
-  // check OTP every 5 seconds
-  setInterval(checkForOtp, 5000);
+    // ── Login success — FIX #5: populate student name in navbar ──
+    function loginSuccess(studentData) {
+        currentStudent = {
+            rollNumber: studentData.rollNumber,
+            name:       studentData.name,
+            className:  studentData.className,
+            division:   studentData.division
+        };
 
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        document.getElementById('student-info-nav').classList.remove('hidden');
+
+        // FIX #5: Set real student name (was always showing "—")
+        document.getElementById('nav-student-name').innerText = studentData.name || '—';
+        document.getElementById('nav-student-roll').innerText = studentData.rollNumber || '—';
+
+        loadApplications();
+    }
+
+    // ── Load student's applications ──
+    async function loadApplications() {
+        if (!currentStudent) return;
+        const list = document.getElementById('applications-list');
+        try {
+            const resp = await fetch(`${BASE_URL}/api/student/applications?rollNumber=${encodeURIComponent(currentStudent.rollNumber)}`);
+            if (!resp.ok) throw new Error('Failed to load');
+            const apps = await resp.json();
+
+            if (!apps.length) {
+                list.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">No applications yet. Submit your first application above.</p>';
+                return;
+            }
+
+            list.innerHTML = apps.map(app => {
+                let badgeClass = 'status-pending';
+                let footer = '';
+
+                if (app.status === 'APPROVED') {
+                    badgeClass = 'status-approved';
+                    footer = '<p style="color:#28a745; font-size:11px; margin-top:5px;">Certificate sent to your email ✅</p>';
+                } else if (app.status === 'REJECTED') {
+                    badgeClass = 'status-rejected';
+                    footer = `<p style="color:#dc3545; font-size:11px; margin-top:5px;">Reason: ${escHtml(app.rejectionReason) || 'N/A'}</p>`;
+                }
+
+                return `
+                    <div class="request-item" style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f0f0f0; padding:15px 0;">
+                        <div>
+                            <strong style="font-size:14px;">${escHtml(app.purpose)}</strong>
+                            <div style="font-size:12px; color:#777; margin-top:4px;">
+                                Applied on ${new Date(app.createdAt).toLocaleDateString()} · Year: ${escHtml(app.academicYear)}
+                            </div>
+                            ${footer}
+                        </div>
+                        <span class="status-badge ${badgeClass}">${escHtml(app.status)}</span>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            list.innerHTML = `<p style="color:#dc3545; text-align:center; padding:20px;">Error loading applications: ${e.message}</p>`;
+        }
+    }
+
+    // ── Submit application — FIX #6: button lock prevents duplicate submissions ──
+    async function submitApplication() {
+        const purpose = document.getElementById('app-purpose').value;
+        const year    = document.getElementById('app-year').value.trim();
+        const errEl   = document.getElementById('apply-error');
+        const btn     = document.getElementById('btn-submit-app');
+        errEl.textContent = '';
+
+        if (!year) { errEl.textContent = '⚠ Academic year is required.'; return; }
+
+        // FIX #6: Disable button immediately to prevent double-submit
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/student/apply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rollNumber:   currentStudent.rollNumber,
+                    purpose:      purpose,
+                    academicYear: year
+                })
+            });
+
+            if (response.ok) {
+                alert('✅ Application submitted successfully!');
+                loadApplications();
+            } else {
+                const data = await response.json();
+                // FIX #6: Show duplicate/error message from server
+                errEl.textContent = '❌ ' + (data.message || 'Failed to submit application.');
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Network error: ' + e.message;
+        } finally {
+            // Re-enable button after response
+            btn.disabled = false;
+            btn.textContent = '🚀 Submit Application';
+        }
+    }
+
+    // ── XSS guard ──
+    function escHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
 </script>
 
 </body>

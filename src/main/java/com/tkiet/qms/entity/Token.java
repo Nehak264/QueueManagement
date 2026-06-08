@@ -25,12 +25,13 @@ public class Token {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Student student;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "slot_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private TimeSlot slot;
-
     private String purpose;
+    
+    @Column(name = "academic_year")
+    private String academicYear;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
 
     @Enumerated(EnumType.STRING)
     private TokenStatus status;
