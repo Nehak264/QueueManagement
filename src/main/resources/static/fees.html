@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TKIET | My Fees</title>
+    <link rel="stylesheet" href="student_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
+        .hidden { display: none; }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white; padding: 16px 32px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .navbar h1 { font-size: 20px; font-weight: 700; }
+        .navbar p  { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+        .nav-back  { background: rgba(255,255,255,0.15); color: white;
+                     border: none; padding: 8px 16px; border-radius: 8px;
+                     cursor: pointer; font-family: inherit; font-size: 13px; }
+        .nav-back:hover { background: rgba(255,255,255,0.25); }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+
+        /* ── Login box ── */
+        .login-box { background: white; border-radius: 16px; padding: 36px;
+                     box-shadow: 0 8px 30px rgba(0,0,0,0.08); max-width: 440px; margin: 40px auto; }
+        .login-box h2 { font-size: 20px; margin-bottom: 6px; color: #1a237e; }
+        .login-box p  { font-size: 13px; color: #777; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px 14px; border: 1.5px solid #ddd;
+                            border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; }
+        .form-group input:focus { border-color: #1a237e; }
+        .otp-row { display: flex; gap: 10px; }
+        .otp-row input { flex: 1; }
+        .btn-primary { width: 100%; padding: 13px; background: linear-gradient(135deg, #1a237e, #283593);
+                       color: white; border: none; border-radius: 10px; font-family: inherit;
+                       font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-outline { padding: 10px 18px; background: transparent; border: 1.5px solid #1a237e;
+                       color: #1a237e; border-radius: 8px; font-family: inherit;
+                       font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .btn-outline:hover { background: #f0f4f8; }
+        .err-msg { font-size: 12px; color: #dc3545; margin-top: 10px; text-align: center; }
+
+        /* ── Summary cards ── */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+        .sum-card { background: white; border-radius: 14px; padding: 22px 20px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.07); text-align: center; }
+        .sum-card .label { font-size: 12px; color: #888; font-weight: 600;
+                           text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .sum-card .amount { font-size: 26px; font-weight: 700; }
+        .sum-card.total  .amount { color: #1a237e; }
+        .sum-card.paid   .amount { color: #2e7d32; }
+        .sum-card.due    .amount { color: #c62828; }
+
+        /* ── Semester cards ── */
+        .sem-card { background: white; border-radius: 14px; padding: 24px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.07); margin-bottom: 16px; }
+        .sem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .sem-title  { font-size: 16px; font-weight: 700; color: #1a237e; }
+        .sem-year   { font-size: 12px; color: #888; background: #f0f4f8;
+                      padding: 4px 10px; border-radius: 20px; }
+
+        /* Progress bar */
+        .progress-wrap { margin-bottom: 18px; }
+        .progress-label { display: flex; justify-content: space-between;
+                          font-size: 12px; color: #666; margin-bottom: 6px; }
+        .progress-bar { width: 100%; height: 10px; background: #f0f4f8;
+                        border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 10px;
+                         background: linear-gradient(90deg, #43a047, #66bb6a);
+                         transition: width .6s ease; }
+        .progress-fill.danger { background: linear-gradient(90deg, #e53935, #ef5350); }
+
+        /* Fee rows */
+        .fee-row { display: flex; justify-content: space-between; align-items: center;
+                   padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+        .fee-row:last-child { border-bottom: none; }
+        .fee-row .key  { font-size: 13px; color: #555; }
+        .fee-row .val  { font-size: 14px; font-weight: 600; color: #222; }
+        .fee-row .val.green  { color: #2e7d32; }
+        .fee-row .val.red    { color: #c62828; }
+        .fee-row .val.orange { color: #e65100; }
+
+        /* Status badge */
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+                 text-transform: uppercase; letter-spacing: .5px; }
+        .badge.paid     { background: #e8f5e9; color: #2e7d32; }
+        .badge.partial  { background: #fff3e0; color: #e65100; }
+        .badge.due      { background: #ffebee; color: #c62828; }
+
+        /* ── Pay offline notice ── */
+        .pay-notice { background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                      border: 1px solid #90caf9; border-radius: 12px;
+                      padding: 18px 20px; margin-top: 16px; display: flex;
+                      gap: 14px; align-items: flex-start; }
+        .pay-notice .icon { font-size: 28px; flex-shrink: 0; }
+        .pay-notice h4 { font-size: 14px; font-weight: 700; color: #1565c0; margin-bottom: 6px; }
+        .pay-notice p  { font-size: 13px; color: #1976d2; line-height: 1.5; }
+        .pay-methods   { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .pay-method    { background: white; border: 1.5px solid #90caf9; color: #1565c0;
+                         padding: 6px 16px; border-radius: 20px; font-size: 12px;
+                         font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+        /* ── Empty / Loading ── */
+        .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 14px; }
+
+        /* ── Student info bar ── */
+        .student-bar { background: white; border-radius: 12px; padding: 16px 20px;
+                       box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px;
+                       display: flex; justify-content: space-between; align-items: center; }
+        .student-bar .name  { font-size: 16px; font-weight: 700; color: #1a237e; }
+        .student-bar .meta  { font-size: 12px; color: #888; margin-top: 2px; }
+        .student-bar .roll  { font-size: 13px; font-weight: 600; color: #555;
+                              background: #f0f4f8; padding: 6px 14px; border-radius: 20px; }
+
+        .footer { text-align: center; color: #aaa; font-size: 12px; padding: 30px 0; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 14px 16px; }
+        }
+        /* ── Modal ── */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                         background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                         justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 500px;
+                         padding: 30px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 18px; color: #1a237e; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        
+        .pay-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .pay-option { border: 1.5px solid #eee; border-radius: 12px; padding: 15px; text-align: center;
+                      cursor: pointer; transition: all 0.2s; }
+        .pay-option:hover { border-color: #1a237e; background: #f0f4f8; }
+        .pay-option.active { border-color: #1a237e; background: #e8eaf6; }
+        .pay-option .icon { font-size: 24px; margin-bottom: 8px; }
+        .pay-option .text { font-size: 13px; font-weight: 600; }
+
+        .pay-detail { padding: 15px; background: #f8f9fa; border-radius: 12px; margin-top: 15px; }
+        .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+        .alert-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+        .detail-list { padding-left: 20px; font-size: 13px; color: #555; }
+        .detail-list li { margin-bottom: 8px; }
+
+        .modal-footer { margin-top: 25px; display: flex; justify-content: flex-end; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div>
+        <h1>💰 Fee Details</h1>
+        <p>TKIET Warananagar — Computer Science &amp; Engineering</p>
+    </div>
+    <button class="nav-back" onclick="window.location.href='Student.html'">← Back to Portal</button>
+</div>
+
+<div class="container">
+
+    <!-- ── LOGIN SECTION ── -->
+    <div id="login-section" class="login-box">
+        <h2>🔐 Verify Identity</h2>
+        <p>Enter your roll number to receive an OTP and view your fee details.</p>
+
+        <div class="form-group">
+            <label>Roll Number</label>
+            <input type="text" id="login-roll" placeholder="7-digit Roll No." maxlength="7"
+                   oninput="this.value=this.value.replace(/\D/g,'')" />
+        </div>
+
+        <div id="otp-group" class="form-group hidden">
+            <label>OTP (sent to your registered mobile)</label>
+            <div class="otp-row">
+                <input type="text" id="login-otp" placeholder="XXXX" maxlength="4" />
+                <button class="btn-outline" onclick="verifyOtp()">Verify</button>
+            </div>
+        </div>
+
+        <button class="btn-primary" id="btn-send-otp" onclick="sendOtp()">Send OTP</button>
+        <p class="err-msg" id="login-err"></p>
+    </div>
+
+    <!-- ── FEE DASHBOARD ── -->
+    <div id="fee-dashboard" class="hidden">
+
+        <!-- Student info bar -->
+        <div class="student-bar">
+            <div>
+                <div class="name" id="dash-name">—</div>
+                <div class="meta" id="dash-meta">—</div>
+            </div>
+            <div class="roll" id="dash-roll">—</div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary-grid">
+            <div class="sum-card total">
+                <div class="label">Total Fees</div>
+                <div class="amount" id="sum-total">₹0</div>
+            </div>
+            <div class="sum-card paid">
+                <div class="label">Amount Paid</div>
+                <div class="amount" id="sum-paid">₹0</div>
+            </div>
+            <div class="sum-card due">
+                <div class="label">Balance Due</div>
+                <div class="amount" id="sum-due">₹0</div>
+            </div>
+        </div>
+
+        <!-- Semester fee cards -->
+        <div id="sem-list">
+            <div class="empty-state">
+                <div class="icon">📂</div>
+                <p>Loading fee records…</p>
+            </div>
+        </div>
+
+        <!-- Pay offline notice -->
+        <div class="pay-notice">
+            <div class="icon">🏦</div>
+            <div>
+                <h4>How to Pay Your Fees</h4>
+                <p>Fees must be paid in person at the college accounts office. Please carry your roll number and a copy of this fee summary. The office accepts the following payment methods:</p>
+                <div class="pay-methods">
+                    <div class="pay-method">💵 Cash</div>
+                    <div class="pay-method">📱 UPI / QR Code</div>
+                    <div class="pay-method">🏧 DD / Cheque</div>
+                </div>
+                <p style="margin-top:10px; font-size:12px;">
+                    Office hours: <strong>10:00 AM – 4:00 PM</strong> (Mon–Sat, excluding holidays)
+                </p>
+                <button class="btn-primary" onclick="openPayModal()" style="margin-top: 15px; background: #1565c0; width: auto; padding: 10px 25px;">
+                    💳 Proceed to Pay
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── PAYMENT MODAL ── -->
+    <div id="pay-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Payment Method</h3>
+                <button class="close-btn" onclick="closePayModal()">&times;</button>
+            </div>
+            
+            <div class="pay-choice-grid">
+                <div class="pay-option" onclick="showPayDetails('cash')">
+                    <div class="icon">💵</div>
+                    <div class="text">Cash / Offline</div>
+                </div>
+                <div class="pay-option" onclick="showPayDetails('upi')">
+                    <div class="icon">📱</div>
+                    <div class="text">UPI / QR Code</div>
+                </div>
+            </div>
+
+            <div id="pay-details-cash" class="pay-detail hidden">
+                <div class="alert alert-info">
+                    <strong>Instructions:</strong> Please visit the <strong>College Accounts Office</strong> (Admin Block, 1st Floor) to pay via Cash or Demand Draft.
+                </div>
+                <ul class="detail-list">
+                    <li>Mention your Roll Number: <strong class="user-roll">—</strong></li>
+                    <li>Timing: 10 AM to 4 PM (Mon-Sat)</li>
+                    <li>Collect your printed receipt immediately</li>
+                </ul>
+            </div>
+
+            <div id="pay-details-upi" class="pay-detail hidden">
+                <div style="text-align: center; padding: 20px;">
+                    <div id="upi-qr-placeholder" style="width: 200px; height: 200px; background: #eee; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 2px dashed #ccc;">
+                        <!-- In a real app, generate a dynamic QR here -->
+                        <span style="color: #666; font-size: 13px;">[ UPI QR CODE ]</span>
+                    </div>
+                    <p style="font-size: 14px; font-weight: 600; color: #1a237e;">Scan to Pay via Any UPI App</p>
+                    <p style="font-size: 12px; color: #777; margin-top: 5px;">Note: Please show the transaction success screen to the clerk for immediate confirmation.</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closePayModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">&copy; 2026 TKIET Warananagar · CSE Department · Online Bonafide System</div>
+</div>
+
+<script>
+    const BASE_URL = "http://localhost:8080";
+    let currentRoll = null;
+
+    // ── On Page Load ──
+    window.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const roll   = params.get('roll');
+        if (roll && roll.length === 7) {
+            autoLogin(roll);
+        }
+    });
+
+    async function autoLogin(roll) {
+        document.getElementById('login-section').innerHTML = `
+            <div style="text-align:center; padding: 40px;">
+                <div class="icon" style="font-size: 40px; margin-bottom: 15px;">⏳</div>
+                <p style="color: #1a237e; font-weight: 600;">Securely retrieving your fee records...</p>
+                <p style="color: #777; font-size: 13px; margin-top: 5px;">Roll Number: ${roll}</p>
+            </div>
+        `;
+        
+        try {
+            // First, get student details (using the same endpoint but it might need roll)
+            // If the backend has an endpoint for student info by roll, we use it.
+            // Based on StudentController, getApplications?rollNumber=... returns apps but not student detail directly.
+            // However, verify-login-otp returns student info IF we had OTP.
+            
+            // For a seamless flow, we'll try to fetch fees directly.
+            const res = await fetch(`${BASE_URL}/api/student/fees?rollNumber=${encodeURIComponent(roll)}`);
+            if (res.ok) {
+                const fees = await res.json();
+                currentRoll = roll;
+                
+                // Show dashboard. Since we don't have name/class yet, we'll fetch them from applications list 
+                // OR just show a generic "Welcome" until we can get details.
+                // Actually, let's try to get details from /api/student/applications roll query
+                const appRes = await fetch(`${BASE_URL}/api/student/applications?rollNumber=${encodeURIComponent(roll)}`);
+                let studentName = "Student";
+                let meta = "—";
+                
+                if (appRes.ok) {
+                    const apps = await appRes.json();
+                    if (apps.length > 0 && apps[0].student) {
+                        studentName = apps[0].student.name;
+                        meta = (apps[0].student.className || '') + ' · Division ' + (apps[0].student.division || '');
+                    }
+                }
+                
+                showDashboard({ name: studentName, className: meta.split(' · ')[0], division: meta.split(' · ')[1] });
+            } else {
+                throw new Error("Student not found");
+            }
+        } catch (e) {
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('login-roll').value = roll;
+            document.getElementById('login-err').textContent = "Please verify your identity to continue.";
+        }
+    }
+
+    // ── Send OTP ──
+    async function sendOtp() {
+        const roll = document.getElementById('login-roll').value.trim();
+        const errEl = document.getElementById('login-err');
+        errEl.textContent = '';
+
+        if (roll.length !== 7) { errEl.textContent = 'Enter a valid 7-digit roll number.'; return; }
+
+        const btn = document.getElementById('btn-send-otp');
+        btn.disabled = true; btn.textContent = 'Sending…';
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/student/send-login-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rollNumber: roll })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('otp-group').classList.remove('hidden');
+                btn.textContent = 'Resend OTP';
+                errEl.style.color = '#2e7d32';
+                errEl.textContent = data.message;
+            } else {
+                errEl.style.color = '#dc3545';
+                errEl.textContent = '❌ ' + (data.message || 'Student not found.');
+                btn.textContent = 'Send OTP';
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Connection error.';
+            btn.textContent = 'Send OTP';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // ── Verify OTP ──
+    async function verifyOtp() {
+        const roll = document.getElementById('login-roll').value.trim();
+        const otp  = document.getElementById('login-otp').value.trim();
+        const errEl = document.getElementById('login-err');
+
+        if (otp.length !== 4) { errEl.textContent = 'Enter 4-digit OTP.'; return; }
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/student/verify-login-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rollNumber: roll, otp })
+            });
+            const data = await res.json();
+
+            if (data.verified) {
+                currentRoll = roll;
+                showDashboard(data);
+            } else {
+                errEl.style.color = '#dc3545';
+                errEl.textContent = '❌ Invalid OTP. Try again.';
+            }
+        } catch (e) {
+            errEl.textContent = '❌ Connection error.';
+        }
+    }
+
+    // ── Show dashboard ──
+    async function showDashboard(studentData) {
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('fee-dashboard').classList.remove('hidden');
+
+        document.getElementById('dash-name').textContent = studentData.name || '—';
+        document.getElementById('dash-meta').textContent =
+            (studentData.className || '') + ' · Division ' + (studentData.division || '');
+        document.getElementById('dash-roll').textContent = 'Roll: ' + currentRoll;
+
+        await loadFees();
+    }
+
+    // ── Load fee records ──
+    async function loadFees() {
+        const list = document.getElementById('sem-list');
+        try {
+            const res  = await fetch(`${BASE_URL}/api/student/fees?rollNumber=${encodeURIComponent(currentRoll)}`);
+            const fees = await res.json();
+
+            if (!fees.length) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No fee records found. Please contact the accounts office.</p>
+                    </div>`;
+                return;
+            }
+
+            // Compute totals for summary cards
+            let grandTotal = 0, grandPaid = 0;
+            fees.forEach(f => { grandTotal += f.totalFees; grandPaid += f.amountPaid; });
+            const grandDue = grandTotal - grandPaid;
+
+            document.getElementById('sum-total').textContent = '₹' + fmt(grandTotal);
+            document.getElementById('sum-paid').textContent  = '₹' + fmt(grandPaid);
+            document.getElementById('sum-due').textContent   = '₹' + fmt(grandDue);
+
+            // Render semester cards
+            list.innerHTML = fees.map(f => {
+                const balance  = f.totalFees - f.amountPaid;
+                const pct      = Math.min(100, Math.round((f.amountPaid / f.totalFees) * 100)) || 0;
+                const isDanger = pct < 50;
+
+                let status, badgeClass;
+                if (balance <= 0)            { status = 'FULLY PAID';    badgeClass = 'paid'; }
+                else if (f.amountPaid > 0)   { status = 'PARTIAL';       badgeClass = 'partial'; }
+                else                         { status = 'DUE';           badgeClass = 'due'; }
+
+                const minLeft = Math.max(0, f.minimumDue - f.amountPaid);
+
+                return `
+                <div class="sem-card">
+                    <div class="sem-header">
+                        <div class="sem-title">Semester ${f.semester}</div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <div class="sem-year">${escHtml(f.academicYear)}</div>
+                            <span class="badge ${badgeClass}">${status}</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-wrap">
+                        <div class="progress-label">
+                            <span>Payment Progress</span>
+                            <span>${pct}% paid</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${isDanger ? 'danger' : ''}" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="fee-row">
+                        <span class="key">Total Fees</span>
+                        <span class="val">₹${fmt(f.totalFees)}</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="key">Minimum Required</span>
+                        <span class="val orange">₹${fmt(f.minimumDue)}</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="key">Amount Paid</span>
+                        <span class="val green">₹${fmt(f.amountPaid)}</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="key">Balance Due</span>
+                        <span class="val ${balance > 0 ? 'red' : 'green'}">₹${fmt(balance)}</span>
+                    </div>
+                    ${minLeft > 0 ? `
+                    <div style="margin-top:12px; background:#fff3e0; border-radius:8px; padding:10px 14px;">
+                        <span style="font-size:12px; color:#e65100;">
+                            ⚠️ You still need to pay <strong>₹${fmt(minLeft)}</strong> to meet the minimum requirement for this semester.
+                        </span>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+
+        } catch (e) {
+            list.innerHTML = `<div class="empty-state"><p style="color:#dc3545;">Error loading fees: ${e.message}</p></div>`;
+        }
+    }
+
+    // ── Helpers ──
+    function fmt(n) {
+        return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // ── Pay Modal ──
+    function openPayModal() {
+        document.getElementById('pay-modal').classList.remove('hidden');
+        document.querySelectorAll('.user-roll').forEach(el => el.textContent = currentRoll);
+    }
+
+    function closePayModal() {
+        document.getElementById('pay-modal').classList.add('hidden');
+    }
+
+    function showPayDetails(method) {
+        // Reset
+        document.querySelectorAll('.pay-option').forEach(opt => opt.classList.remove('active'));
+        document.querySelectorAll('.pay-detail').forEach(det => det.classList.add('hidden'));
+
+        // Show selected
+        const optEl = method === 'cash' ? document.querySelectorAll('.pay-option')[0] : document.querySelectorAll('.pay-option')[1];
+        optEl.classList.add('active');
+        document.getElementById(`pay-details-${method}`).classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

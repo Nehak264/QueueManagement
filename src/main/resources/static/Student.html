@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>TKIET | Student Application Dashboard</title>
     <link rel="stylesheet" href="student_style.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
@@ -92,6 +93,15 @@
             <!-- FIX #6: Button disabled during submission to prevent duplicates -->
             <button class="btn btn-blue" id="btn-submit-app" onclick="submitApplication()" style="margin-top:10px;">
                 🚀 Submit Application
+            </button>
+        </div>
+
+        <div class="dashboard-actions">
+            <button class="btn btn-fees" onclick="location.href='fees.html?roll=' + currentStudent.rollNumber">
+                💰 View & Manage My Fees
+            </button>
+            <button class="btn btn-outline" onclick="location.reload()" style="flex: 1;">
+                🔄 Refresh Applications
             </button>
         </div>
 
