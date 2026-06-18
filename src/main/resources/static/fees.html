@@ -181,9 +181,10 @@
         </div>
 
         <div id="otp-group" class="form-group hidden">
-            <label>OTP (sent to your registered mobile)</label>
+            <label>OTP (sent to your registered email)</label>
             <div class="otp-row">
-                <input type="text" id="login-otp" placeholder="XXXX" maxlength="4" />
+                <input type="text" id="login-otp" placeholder="6-digit OTP" maxlength="6"
+                       oninput="this.value=this.value.replace(/\D/g,'')" />
                 <button class="btn-outline" onclick="verifyOtp()">Verify</button>
             </div>
         </div>
@@ -402,7 +403,7 @@
         const otp  = document.getElementById('login-otp').value.trim();
         const errEl = document.getElementById('login-err');
 
-        if (otp.length !== 4) { errEl.textContent = 'Enter 4-digit OTP.'; return; }
+        if (otp.length !== 6) { errEl.textContent = 'Enter the 6-digit OTP sent to your email.'; return; }
 
         try {
             const res = await fetch(`${BASE_URL}/api/student/verify-login-otp`, {
@@ -528,6 +529,16 @@
     // ── Helpers ──
     function fmt(n) {
         return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // ── Pay Modal ──

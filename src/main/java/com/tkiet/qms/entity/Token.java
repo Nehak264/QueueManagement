@@ -26,6 +26,15 @@ public class Token {
     private Student student;
 
     private String purpose;
+
+    /**
+     * Queue priority score assigned at submission time.
+     * Lower = processed first by admin.
+     * 1 = Passport/Visa (urgent), 2 = Scholarship, 3 = Bank Account, 4 = Other
+     * NULL for legacy tokens — treated as lowest priority (4) in admin display.
+     */
+    @Column(name = "priority_score")
+    private Integer priorityScore;
     
     @Column(name = "academic_year")
     private String academicYear;

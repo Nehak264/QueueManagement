@@ -48,10 +48,10 @@
             </div>
             <div class="form-group">
                 <label>Roll Number *</label>
-                <!-- FIX #3: Added pattern + real-time validation -->
-                <input type="text" id="reg-roll" placeholder="7-digit Roll No." maxlength="7"
+                <!-- Format: 23UGCS22047 (year + UG + dept + sequence) -->
+                <input type="text" id="reg-roll" placeholder="e.g. 23UGCS22047" maxlength="11"
                        oninput="validateRoll(this)" />
-                <span class="field-error" id="err-roll">Must be exactly 7 digits.</span>
+                <span class="field-error" id="err-roll">Format: 23UGCS22047 (2-digit year + UG + 2-letter dept + 5-digit no.)</span>
             </div>
         </div>
 
@@ -121,19 +121,28 @@
     const BASE_URL = "http://localhost:8080";
     let isOtpVerified = false;
 
-    // ── FIX #3: Real-time roll number validation ──
+    // ── Real-time roll number validation (format: 23UGCS22047) ──
+    // Pattern: 2-digit year + "UG" + 2-letter dept code + 5-digit sequence
+    // Examples: 23UGCS22047, 23UGME22043, 23UGCE22001
+    const ROLL_REGEX = /^\d{2}UG[A-Z]{2}\d{5}$/;
+
     function validateRoll(input) {
-        const val = input.value.replace(/\D/g, ''); // strip non-digits
-        input.value = val;
+        input.value = input.value.toUpperCase(); // auto-uppercase dept code
+        const val = input.value.trim();
         const err = document.getElementById('err-roll');
-        if (val.length === 7) {
+        if (ROLL_REGEX.test(val)) {
             input.classList.remove('invalid');
             input.classList.add('valid');
             err.style.display = 'none';
         } else {
             input.classList.remove('valid');
-            input.classList.add('invalid');
-            err.style.display = 'block';
+            if (val.length > 0) {
+                input.classList.add('invalid');
+                err.style.display = 'block';
+            } else {
+                input.classList.remove('invalid');
+                err.style.display = 'none';
+            }
         }
     }
 
@@ -255,9 +264,9 @@
         if (!name) {
             errEl.textContent = '⚠ Full Name is required.'; return;
         }
-        // FIX #3: Enforce 7-digit roll number before sending to server
-        if (!/^\d{7}$/.test(roll)) {
-            errEl.textContent = '⚠ Roll number must be exactly 7 digits.'; return;
+        // Enforce institutional roll number format (e.g. 23UGCS22047)
+        if (!ROLL_REGEX.test(roll)) {
+            errEl.textContent = '⚠ Invalid roll number. Format: 23UGCS22047 (year + UG + dept + 5-digit no.)'; return;
         }
         if (!cls) {
             errEl.textContent = '⚠ Please select a class.'; return;

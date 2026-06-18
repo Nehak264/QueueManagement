@@ -15,7 +15,11 @@ public class BonafideService {
     private TokenRepository tokenRepository;
 
     public BonafideCertificate saveCertificate(Token token, String refNumber, String academicYear) {
-        BonafideCertificate cert = new BonafideCertificate();
+        // Upsert: reuse the existing record if one already exists for this token
+        // (prevents duplicate-key on both ref_number and token_id unique constraints)
+        BonafideCertificate cert = certRepository.findByTokenId(token.getId())
+                .orElse(new BonafideCertificate());
+
         cert.setToken(token);
         cert.setRefNumber(refNumber);
         cert.setAcademicYear(academicYear);

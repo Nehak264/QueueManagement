@@ -7,7 +7,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
+    body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
         .hidden { display: none; }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
         .status-pending  { background: #fff3cd; color: #856404; }
@@ -16,6 +16,41 @@
         .login-box { max-width: 450px; margin: 40px auto; }
         .dashboard-container { max-width: 900px; margin: 0 auto; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Portal Status Banner */
+        .portal-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid;
+        }
+        .portal-banner.open {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .portal-banner.closed {
+            background: #fff7ed;
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+        .portal-banner .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .portal-banner.open  .dot { background: #10b981; animation: pulse 1.5s infinite; }
+        .portal-banner.closed .dot { background: #f59e0b; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
     </style>
 </head>
 <body>
@@ -40,7 +75,9 @@
 
         <div class="form-group">
             <label>Roll Number</label>
-            <input type="text" id="login-roll" placeholder="Enter your 7-digit Roll No." maxlength="7" />
+            <input type="text" id="login-roll" placeholder="e.g. 23UGCS22047" maxlength="11"
+                   oninput="this.value = this.value.toUpperCase()" />
+            <span style="font-size:11px; color:#888;">Format: year + UG + dept + 5-digit no. (e.g. 23UGME22047)</span>
         </div>
 
         <div id="otp-login-group" class="hidden">
@@ -69,7 +106,13 @@
 
         <div class="box">
             <h2>📄 New Bonafide Application</h2>
-            <p style="font-size:13px; color:#666; margin-bottom:20px;">Apply for a new certificate. Usually processed within 24–48 hours.</p>
+            <p style="font-size:13px; color:#666; margin-bottom:16px;">Apply for a new certificate. Usually processed within 24–48 hours.</p>
+
+            <!-- Portal Status Banner (live-updated every minute) -->
+            <div id="portal-banner" class="portal-banner open">
+                <div class="dot"></div>
+                <div id="portal-banner-text">Checking portal hours…</div>
+            </div>
 
             <div class="form-row">
                 <div class="form-group">
@@ -90,7 +133,6 @@
 
             <p id="apply-error" style="font-size:12px; color:#dc3545; margin-top:8px;"></p>
 
-            <!-- FIX #6: Button disabled during submission to prevent duplicates -->
             <button class="btn btn-blue" id="btn-submit-app" onclick="submitApplication()" style="margin-top:10px;">
                 🚀 Submit Application
             </button>
@@ -129,7 +171,9 @@
         const errEl = document.getElementById('login-error');
         errEl.textContent = '';
 
+        const ROLL_REGEX = /^\d{2}UG[A-Z]{2}\d{5}$/;
         if (!roll) { errEl.textContent = 'Enter your Roll Number.'; return; }
+        if (!ROLL_REGEX.test(roll)) { errEl.textContent = '⚠ Invalid format. Use: 23UGCS22047 (year + UG + dept + 5 digits).'; return; }
 
         const btn = document.getElementById('btn-send-login-otp');
         btn.disabled = true;
@@ -261,13 +305,49 @@
         }
     }
 
-    // ── Submit application — FIX #6: button lock prevents duplicate submissions ──
+    // ── Portal hours helper ──
+    // 🚧 TESTING MODE: always open — re-enable real check before production
+    function isPortalOpen() {
+        return true; // bypass time gate for testing
+        // const now = new Date();
+        // const day  = now.getDay();
+        // const hour = now.getHours();
+        // const isWeekday = day >= 1 && day <= 5;
+        // const isHours   = hour >= 9 && hour < 17;
+        // return isWeekday && isHours;
+    }
+
+    function updatePortalBanner() {
+        const banner = document.getElementById('portal-banner');
+        const text   = document.getElementById('portal-banner-text');
+        if (!banner || !text) return;
+        const now  = new Date();
+        const open = isPortalOpen();
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        if (open) {
+            banner.className = 'portal-banner open';
+            text.innerHTML = `🟢 <strong>Portal is OPEN</strong> — Submit your application now &nbsp;·&nbsp; ${days[now.getDay()]}, ${timeStr}`;
+        } else {
+            banner.className = 'portal-banner closed';
+            const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+            const reason = isWeekend
+                ? 'Weekend — office closed'
+                : now.getHours() < 9 ? 'Office opens at 9:00 AM' : 'Office closed at 5:00 PM';
+            text.innerHTML = `🔴 <strong>Portal is CLOSED</strong> — ${reason} &nbsp;·&nbsp; ${days[now.getDay()]}, ${timeStr}`;
+        }
+    }
+
+    // ── Submit application ──
     async function submitApplication() {
         const purpose = document.getElementById('app-purpose').value;
         const year    = document.getElementById('app-year').value.trim();
         const errEl   = document.getElementById('apply-error');
         const btn     = document.getElementById('btn-submit-app');
         errEl.textContent = '';
+
+        // 🚧 TESTING MODE: time check disabled — re-enable before production
+        // if (!isPortalOpen()) { ... }
 
         if (!year) { errEl.textContent = '⚠ Academic year is required.'; return; }
 
@@ -312,6 +392,10 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
     }
+
+    // ── Portal banner init: run immediately, then refresh every 60 s ──
+    updatePortalBanner();
+    setInterval(updatePortalBanner, 60000);
 </script>
 
 </body>

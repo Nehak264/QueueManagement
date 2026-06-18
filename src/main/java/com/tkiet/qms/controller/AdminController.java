@@ -19,8 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -81,8 +83,11 @@ public class AdminController {
 
         String academicYear = body.getOrDefault("academicYear", token.getAcademicYear());
 
-        // 1. Generate ref number
-        String refNumber = "TKIET/CSE/BON/" + academicYear + "/" + token.getTokenNumber();
+        // Ref number uses the token's DB id — globally unique, never resets.
+        // token.getTokenNumber() is a daily counter that resets to 1 each day
+        // and caused duplicate-key errors when multiple approvals happened across days.
+        String refNumber = "TKIET/CSE/BON/" + academicYear + "/TK-"
+                + String.format("%05d", token.getId());
 
         // 2. Generate PDF
         byte[] pdfBytes = pdfService.generateBonafidePdf(
@@ -147,6 +152,60 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Application rejected."));
     }
 
+    // ── GET /api/admin/verify/{tokenId} ──
+    @GetMapping("/verify/{tokenId}")
+    public ResponseEntity<?> verifyToken(@PathVariable Long tokenId) {
+        Token token = tokenService.getTokenById(tokenId);
+        if (token == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "Token not found"));
+        }
+
+        Student student = token.getStudent();
+        List<Token> allTokens = tokenService.getStudentTokens(student.getId());
+
+        // History excluding the current token
+        List<Token> history = allTokens.stream()
+                .filter(t -> !t.getId().equals(tokenId))
+                .collect(Collectors.toList());
+
+        long approvedCount = history.stream().filter(t -> t.getStatus() == com.tkiet.qms.entity.TokenStatus.APPROVED).count();
+        long rejectedCount = history.stream().filter(t -> t.getStatus() == com.tkiet.qms.entity.TokenStatus.REJECTED).count();
+        long pendingCount  = history.stream().filter(t -> t.getStatus() == com.tkiet.qms.entity.TokenStatus.PENDING).count();
+
+        // Check if there's a duplicate pending application for same purpose
+        boolean hasDuplicatePending = history.stream()
+                .anyMatch(t -> t.getStatus() == com.tkiet.qms.entity.TokenStatus.PENDING
+                        && t.getPurpose() != null
+                        && t.getPurpose().equalsIgnoreCase(token.getPurpose()));
+
+        // Check if same purpose was already approved
+        boolean alreadyApprovedSamePurpose = history.stream()
+                .anyMatch(t -> t.getStatus() == com.tkiet.qms.entity.TokenStatus.APPROVED
+                        && t.getPurpose() != null
+                        && t.getPurpose().equalsIgnoreCase(token.getPurpose())
+                        && t.getAcademicYear() != null
+                        && t.getAcademicYear().equals(token.getAcademicYear()));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("studentName",    student.getName());
+        result.put("rollNumber",     student.getRollNumber());
+        result.put("className",      student.getClassName());
+        result.put("division",       student.getDivision());
+        result.put("email",          student.getEmail());
+        result.put("mobile",         student.getMobile());
+        result.put("source", student.getSource() != null ? student.getSource() : "SELF_REGISTERED");
+        result.put("totalHistory",   history.size());
+        result.put("approvedCount",  approvedCount);
+        result.put("rejectedCount",  rejectedCount);
+        result.put("pendingCount",   pendingCount);
+        result.put("hasDuplicatePending",        hasDuplicatePending);
+        result.put("alreadyApprovedSamePurpose", alreadyApprovedSamePurpose);
+        result.put("isFirstTimeApplicant",       history.isEmpty());
+        result.put("registeredOn",   student.getCreatedAt());
+
+        return ResponseEntity.ok(result);
+    }
+
     // ── GET /api/admin/stats ──
     @GetMapping("/stats")
     public Map<String, Long> getStats() {
@@ -170,7 +229,8 @@ public class AdminController {
              Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
-            int savedCount = 0;
+            int savedCount   = 0;
+            int updatedCount = 0;
             int skippedCount = 0;
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -186,11 +246,27 @@ public class AdminController {
 
                 if (name.isEmpty() || rollNumber.isEmpty()) continue;
 
-                if (studentRepository.findByRollNumber(rollNumber) != null) {
-                    skippedCount++;
+                Student existing = studentRepository.findByRollNumber(rollNumber);
+
+                if (existing != null) {
+                    // If student was self-registered, upgrade them to ADMIN_UPLOADED
+                    // and overwrite their data with official college records
+                    if (!"ADMIN_UPLOADED".equals(existing.getSource())) {
+                        existing.setName(name);
+                        existing.setClassName(className);
+                        existing.setDivision(division);
+                        existing.setEmail(email);
+                        existing.setMobile(mobile);
+                        existing.setSource("ADMIN_UPLOADED");
+                        studentRepository.save(existing);
+                        updatedCount++;
+                    } else {
+                        skippedCount++; // already official, skip
+                    }
                     continue;
                 }
 
+                // New student — save as official (ADMIN_UPLOADED)
                 Student student = new Student();
                 student.setName(name);
                 student.setRollNumber(rollNumber);
@@ -198,12 +274,15 @@ public class AdminController {
                 student.setDivision(division);
                 student.setEmail(email);
                 student.setMobile(mobile);
+                student.setSource("ADMIN_UPLOADED");  // mark as verified official record
                 studentRepository.save(student);
                 savedCount++;
             }
 
-            return ResponseEntity.ok(savedCount + " students imported! "
-                    + skippedCount + " skipped (already exist).");
+            return ResponseEntity.ok(
+                    savedCount + " students imported, "
+                    + updatedCount + " upgraded to verified, "
+                    + skippedCount + " already official (skipped).");
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error reading file: " + e.getMessage());

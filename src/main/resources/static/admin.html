@@ -1,191 +1,1247 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TKIET | Admin Bonafide Dashboard</title>
     <link rel="stylesheet" href="bonafide_style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f0f4f8; }
-        .hidden { display: none; }
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { padding: 25px; border-radius: 15px; color: white; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .stat-card.pending  { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
-        .stat-card.approved { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-        .stat-card.rejected { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
-        .btn-approve { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: opacity .2s; }
-        .btn-approve:hover { opacity: .85; }
-        .btn-reject  { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: opacity .2s; }
-        .btn-reject:hover  { opacity: .85; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; transition: color .2s, border-color .2s; }
-        .tab.active { border-bottom-color: #007bff; color: #007bff; }
-        .empty-msg { text-align:center; color:#999; padding:40px; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f4f8;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.pending {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        .stat-card.approved {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .stat-card.rejected {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .btn-approve:hover {
+            opacity: .85;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .btn-reject:hover {
+            opacity: .85;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            transition: color .2s, border-color .2s;
+        }
+
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+
+        /* Fee upload section */
+        .upload-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+            margin-bottom: 20px;
+        }
+
+        .upload-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 6px;
+        }
+
+        .upload-card p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed #b0bec5;
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            background: #f8f9fa;
+        }
+
+        .file-drop-zone:hover {
+            border-color: #007bff;
+            background: #f0f4ff;
+        }
+
+        .file-drop-zone.has-file {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .file-drop-zone .drop-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .file-drop-zone p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .file-drop-zone .file-name {
+            font-weight: 700;
+            color: #1a237e;
+            font-size: 15px;
+        }
+
+        .upload-result {
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .upload-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .upload-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .format-table th {
+            background: #1a237e;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .format-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .format-table tr:hover td {
+            background: #f8f9fa;
+        }
+
+        .col-letter {
+            font-weight: 700;
+            color: #007bff;
+            font-size: 15px;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: opacity .2s;
+        }
+
+        .btn-upload:hover {
+            opacity: .9;
+        }
+
+        .btn-upload:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-template {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-template:hover {
+            opacity: .9;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        /* Priority queue badge styles */
+        .priority-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            white-space: nowrap;
+        }
+
+        .priority-1 {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .priority-2 {
+            background: #fff3e0;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .priority-3 {
+            background: #e0f2fe;
+            color: #075985;
+            border: 1px solid #7dd3fc;
+        }
+
+        .priority-4 {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* Queue legend bar */
+        .queue-legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .queue-legend strong {
+            color: #1e293b;
+            margin-right: 4px;
+        }
 
         /* Rejection modal */
-     #reject-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,.5);
-    align-items: center; justify-content: center; z-index: 1000;
-}
-#reject-modal:not(.hidden) {
-    display: flex;
-}
-        #reject-modal .box { width: 420px; }
-        #reject-reason { width: 100%; height: 100px; margin: 15px 0; padding: 10px;
-                         border: 1px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical; }
+        #reject-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .55);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        #reject-modal:not(.hidden) {
+            display: flex;
+        }
+
+        #reject-modal .box {
+            width: 480px;
+            border-radius: 18px;
+            padding: 28px;
+        }
+
+        #reject-modal h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+
+        #reject-modal .sub {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 18px;
+        }
+
+        .reason-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .reason-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .reason-item:hover {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .reason-item input[type=radio] {
+            margin-top: 2px;
+            accent-color: #dc3545;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .reason-item.selected {
+            border-color: #dc3545;
+            background: #fff0f0;
+        }
+
+        .reason-item .r-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .reason-item .r-desc {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        #reject-notes {
+            width: 100%;
+            height: 70px;
+            padding: 10px 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+            margin-top: 4px;
+        }
+
+        #reject-notes:focus {
+            outline: none;
+            border-color: #dc3545;
+        }
+
+        .notes-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
 
         /* Spinner for async actions */
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff;
-                   border-top-color: transparent; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-left: 6px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-
-<div class="navbar">
-    <div>
-        <h1>📄 Bonafide Administration</h1>
-        <p>TKIET Warananangar — Computer Science &amp; Engineering</p>
-    </div>
-    <div style="text-align:right">
-        <a href="http://localhost:8080/api/admin/download-students" style="text-decoration:none;">
-            <button class="btn" style="background:#fff; color:#333; margin-right:10px;">📥 Download Students</button>
-        </a>
-        <a href="upload.html" style="text-decoration:none;">
-            <button class="btn" style="background:#fff; color:#333;">📤 Upload Students</button>
-        </a>
-    </div>
-</div>
-
-<div class="container" style="max-width:1100px; margin-top:30px;">
-
-    <!-- STATS -->
-    <div class="stats-row">
-        <div class="stat-card pending">
-            <div class="num" id="stat-pending" style="font-size:32px; font-weight:700;">—</div>
-            <div class="lbl" style="font-size:14px; opacity:.9;">Total Pending</div>
-        </div>
-        <div class="stat-card approved">
-            <div class="num" id="stat-approved" style="font-size:32px; font-weight:700;">—</div>
-            <div class="lbl" style="font-size:14px; opacity:.9;">Approved Today</div>
-        </div>
-        <div class="stat-card rejected">
-            <div class="num" id="stat-rejected" style="font-size:32px; font-weight:700;">—</div>
-            <div class="lbl" style="font-size:14px; opacity:.9;">Rejected Today</div>
-        </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-        <div class="tab active" id="tab-pending"  onclick="switchTab('pending')">Pending Requests</div>
-        <div class="tab"        id="tab-approved" onclick="switchTab('approved')">Approved Archive</div>
-    </div>
-
-    <!-- PENDING SECTION -->
-    <div id="pending-section" class="box">
-        <h2 style="margin-bottom:20px;">📋 Pending Applications</h2>
-        <div id="pending-list">
-            <p class="empty-msg">Loading…</p>
-        </div>
-    </div>
-
-    <!-- FIX #4: Approved archive section now actually loads data -->
-    <div id="approved-section" class="box hidden">
-        <h2 style="margin-bottom:20px;">✅ Approved Applications</h2>
-        <div id="approved-list">
-            <p class="empty-msg">Loading…</p>
-        </div>
-    </div>
-
-</div>
-
-<!-- REJECTION MODAL -->
-<div id="reject-modal" class="hidden">
-    <div class="box">
-        <h3>Reason for Rejection</h3>
-        <textarea id="reject-reason" placeholder="e.g. Roll number mismatch, incomplete documents…"></textarea>
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-reject" onclick="confirmReject()">Confirm Reject</button>
-            <button class="btn btn-outline" style="background:white; color:#333; border:1px solid #ccc;" onclick="closeRejectModal()">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div class="footer">
-    &copy; 2026 TKIET Warananangar · Admin Control Panel
-</div>
-
-<script>
-    const BASE_URL = "http://localhost:8080";
-    let selectedTokenId = null;
-
-    // ── Stats ──
-    async function loadStats() {
-        try {
-            const resp = await fetch(`${BASE_URL}/api/admin/stats`);
-            if (!resp.ok) throw new Error('Stats fetch failed');
-            const stats = await resp.json();
-            document.getElementById('stat-pending').innerText  = stats.pending        ?? 0;
-            document.getElementById('stat-approved').innerText = stats.approvedToday  ?? 0;
-            document.getElementById('stat-rejected').innerText = stats.rejectedToday  ?? 0;
-        } catch (e) {
-            console.error('loadStats error:', e);
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            vertical-align: middle;
+            margin-left: 6px;
         }
-    }
 
-    // ── Pending applications ──
-    async function loadApplications() {
-        const list = document.getElementById('pending-list');
-        try {
-            const resp = await fetch(`${BASE_URL}/api/admin/applications`);
-            if (!resp.ok) throw new Error('Failed to load applications');
-            const apps = await resp.json();
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
-            if (!apps.length) {
-                list.innerHTML = '<p class="empty-msg">No pending applications.</p>';
-                return;
+        /* ── Student Info Modal ── */
+        #student-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        #student-modal.open {
+            display: flex;
+        }
+
+        .sm-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp .25s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
 
-            list.innerHTML = apps.map(app => `
-                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:15px; align-items:center; padding:15px; border-bottom:1px solid #eee;">
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sm-header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 24px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .sm-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .sm-header p {
+            font-size: 13px;
+            opacity: .75;
+            margin: 0;
+        }
+
+        .sm-close {
+            background: rgba(255, 255, 255, .15);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .sm-close:hover {
+            background: rgba(255, 255, 255, .3);
+        }
+
+        .sm-body {
+            padding: 24px 28px;
+        }
+
+        .sm-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #94a3b8;
+            margin: 0 0 12px;
+        }
+
+        .sm-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .sm-field {}
+
+        .sm-field .lbl {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .sm-field .val {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .sm-field .val.highlight {
+            color: #1a237e;
+        }
+
+        .sm-divider {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 4px 0 20px;
+        }
+
+        .sm-req-box {
+            background: #f0f4ff;
+            border: 1px solid #c7d7ff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+        }
+
+        .sm-req-box .req-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0e8ff;
+            font-size: 13px;
+        }
+
+        .sm-req-box .req-row:last-child {
+            border-bottom: none;
+        }
+
+        .sm-req-box .req-row .k {
+            color: #5b6e9a;
+        }
+
+        .sm-req-box .req-row .v {
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+        .sm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sm-btn-approve {
+            flex: 1;
+            padding: 13px;
+            background: linear-gradient(135deg, #28a745, #20c46a);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .sm-btn-approve:hover {
+            opacity: .9;
+        }
+
+        .sm-btn-reject {
+            flex: 1;
+            padding: 13px;
+            background: linear-gradient(135deg, #dc3545, #ff4d5e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .sm-btn-reject:hover {
+            opacity: .9;
+        }
+
+        .sm-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sm-tag.pending {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .sm-tag.approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .sm-tag.rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* ── Source alert inside verify panel ── */
+        .src-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid;
+        }
+
+        .src-alert.danger {
+            background: #fff1f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .src-alert.success {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .src-alert .src-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .src-alert .src-body .src-title {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .src-alert .src-body .src-sub {
+            font-size: 11px;
+            font-weight: 400;
+            margin-top: 2px;
+            opacity: .85;
+        }
+
+        .verify-panel {
+            background: #f8faff;
+            border: 1.5px solid #dde5ff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+        .verify-panel .vp-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eef0f8;
+        }
+
+        .check-row:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .check-text {
+            color: #374151;
+            flex: 1;
+        }
+
+        .check-sub {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .chk-ok {
+            color: #16a34a;
+        }
+
+        .chk-warn {
+            color: #d97706;
+        }
+
+        .chk-bad {
+            color: #dc2626;
+        }
+
+        /* history summary */
+        .hist-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .hist-chip {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .hist-chip.approved {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .hist-chip.rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .hist-chip.pending {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        /* row-level verification tag */
+        .vtag {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            white-space: nowrap;
+        }
+
+        .vtag-new {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .vtag-verified {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .vtag-repeated {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <div>
+            <h1>📄 Bonafide Administration</h1>
+            <p>TKIET Warananangar — Computer Science &amp; Engineering</p>
+        </div>
+        <div style="text-align:right">
+            <a href="http://localhost:8080/api/admin/download-students" style="text-decoration:none;">
+                <button class="btn" style="background:#fff; color:#333; margin-right:10px;">📥 Download
+                    Students</button>
+            </a>
+            <a href="upload.html" style="text-decoration:none;">
+                <button class="btn" style="background:#fff; color:#333;">📤 Upload Students</button>
+            </a>
+        </div>
+    </div>
+
+    <div class="container" style="max-width:1100px; margin-top:30px;">
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card pending">
+                <div class="num" id="stat-pending" style="font-size:32px; font-weight:700;">—</div>
+                <div class="lbl" style="font-size:14px; opacity:.9;">Total Pending</div>
+            </div>
+            <div class="stat-card approved">
+                <div class="num" id="stat-approved" style="font-size:32px; font-weight:700;">—</div>
+                <div class="lbl" style="font-size:14px; opacity:.9;">Approved Today</div>
+            </div>
+            <div class="stat-card rejected">
+                <div class="num" id="stat-rejected" style="font-size:32px; font-weight:700;">—</div>
+                <div class="lbl" style="font-size:14px; opacity:.9;">Rejected Today</div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <div class="tab active" id="tab-pending" onclick="switchTab('pending')">📋 Pending Requests</div>
+            <div class="tab" id="tab-approved" onclick="switchTab('approved')">✅ Approved Archive</div>
+            <div class="tab" id="tab-fees" onclick="switchTab('fees')">💰 Fee Management</div>
+        </div>
+
+        <!-- PENDING SECTION -->
+        <div id="pending-section" class="box">
+            <h2 style="margin-bottom:12px;">📋 Pending Applications</h2>
+            <!-- Queue priority legend -->
+            <div class="queue-legend">
+                <strong>Queue Order:</strong>
+                <span class="priority-badge priority-1">🔴 Score 1 — Passport / Visa</span>
+                <span class="priority-badge priority-2">🟡 Score 2 — Scholarship</span>
+                <span class="priority-badge priority-3">🔵 Score 3 — Bank Account</span>
+                <span class="priority-badge priority-4">⚪ Score 4 — Other</span>
+                <span style="margin-left:auto; font-style:italic;">Within same score → earliest submission shown
+                    first</span>
+            </div>
+            <div id="pending-list">
+                <p class="empty-msg">Loading…</p>
+            </div>
+        </div>
+
+        <!-- FIX #4: Approved archive section now actually loads data -->
+        <div id="approved-section" class="box hidden">
+            <h2 style="margin-bottom:20px;">✅ Approved Applications</h2>
+            <div id="approved-list">
+                <p class="empty-msg">Loading…</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FEE MANAGEMENT SECTION -->
+    <div id="fees-section" class="hidden">
+
+        <!-- Upload Card -->
+        <div class="upload-card">
+            <h3>📤 Upload Student Fee Records</h3>
+            <p>Upload an Excel (.xlsx) file to add or update semester-wise fee records for all students. Existing
+                records for the same student + semester + year will be updated automatically.</p>
+
+            <!-- Drop zone -->
+            <div class="file-drop-zone" id="drop-zone" onclick="document.getElementById('fee-file-input').click()">
+                <div class="drop-icon">📊</div>
+                <p id="drop-label">Click here or drag & drop your <strong>.xlsx</strong> file</p>
+                <p style="font-size:12px; color:#999; margin-top:6px;">Max size: 10 MB</p>
+            </div>
+            <input type="file" id="fee-file-input" accept=".xlsx" style="display:none"
+                onchange="onFileSelected(this)" />
+
+            <button class="btn-upload" id="btn-upload-fees" onclick="uploadFees()" disabled>📤 Upload & Process</button>
+
+            <div class="upload-result" id="upload-result"></div>
+        </div>
+
+        <!-- Format Guide -->
+        <div class="upload-card">
+            <div
+                style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                <div>
+                    <h3>📋 Required Excel Format</h3>
+                    <p style="margin:0;">Row 1 must be a header row (it will be skipped). Data starts from row 2.</p>
+                </div>
+                <button class="btn-template" onclick="downloadTemplate()">📥 Download Template</button>
+            </div>
+
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Header Name</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="col-letter">A</td>
+                        <td>Roll Number</td>
+                        <td>7-digit student roll number (must be registered)</td>
+                        <td>2201234</td>
+                    </tr>
+                    <tr>
+                        <td class="col-letter">B</td>
+                        <td>Academic Year</td>
+                        <td>Year range in format YYYY-YYYY</td>
+                        <td>2025-2026</td>
+                    </tr>
+                    <tr>
+                        <td class="col-letter">C</td>
+                        <td>Semester</td>
+                        <td>Semester number (1 to 8)</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="col-letter">D</td>
+                        <td>Total Fees</td>
+                        <td>Total fee amount for the semester (in ₹)</td>
+                        <td>75000</td>
+                    </tr>
+                    <tr>
+                        <td class="col-letter">E</td>
+                        <td>Minimum Due</td>
+                        <td>Minimum amount the student must pay this semester</td>
+                        <td>37500</td>
+                    </tr>
+                    <tr>
+                        <td class="col-letter">F</td>
+                        <td>Amount Paid</td>
+                        <td>How much has been paid so far (0 if not paid)</td>
+                        <td>20000</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div
+                style="margin-top:16px; background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:12px 16px; font-size:13px; color:#5d4037;">
+                ⚠️ <strong>Important:</strong> The Roll Number in column A must match a student already registered in
+                the system. Unknown roll numbers will be skipped and counted in the report.
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+    <!-- REJECTION MODAL (Guided) -->
+    <div id="reject-modal" class="hidden">
+        <div class="box">
+            <h3>❌ Reject Application</h3>
+            <p class="sub">Select the primary reason — the student will receive this in their notification email.</p>
+
+            <div class="reason-list" id="reason-list">
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Roll Number Mismatch">
                     <div>
-                        <strong style="display:block;">${escHtml(app.student.name)}</strong>
+                        <div class="r-title">🔢 Roll Number Mismatch</div>
+                        <div class="r-desc">Physical records show a different roll number than registered</div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Wrong Division or Class">
+                    <div>
+                        <div class="r-title">🏫 Wrong Division / Class</div>
+                        <div class="r-desc">Student's division or class name does not match institutional records</div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Incorrect Academic Year">
+                    <div>
+                        <div class="r-title">📅 Incorrect Academic Year</div>
+                        <div class="r-desc">Claimed academic year doesn't match the student's current enrollment</div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Duplicate Application — Certificate Already Issued">
+                    <div>
+                        <div class="r-title">📄 Duplicate Application</div>
+                        <div class="r-desc">A bonafide certificate for the same purpose and year was already issued
+                        </div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Purpose Not Valid for Bonafide Certificate">
+                    <div>
+                        <div class="r-title">🚫 Purpose Not Valid</div>
+                        <div class="r-desc">The stated purpose does not qualify for a bonafide certificate</div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Fraudulent or Suspicious Request">
+                    <div>
+                        <div class="r-title">⚠️ Fraudulent / Suspicious Activity</div>
+                        <div class="r-desc">Request appears suspicious or information could not be verified</div>
+                    </div>
+                </label>
+                <label class="reason-item" onclick="selectReason(this)">
+                    <input type="radio" name="rej-reason" value="Other">
+                    <div>
+                        <div class="r-title">✏️ Other</div>
+                        <div class="r-desc">Specify a custom reason in the notes field below</div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="notes-label">Additional Notes <span style="font-weight:400;color:#aaa;">(optional)</span></div>
+            <textarea id="reject-notes" placeholder="Add any specific details here…"></textarea>
+
+            <div style="display:flex; gap:10px; margin-top:18px;">
+                <button class="btn btn-reject" onclick="confirmReject()" style="flex:1;">Confirm Reject</button>
+                <button class="btn btn-outline" style="background:white;color:#333;border:1px solid #ccc;flex:1;"
+                    onclick="closeRejectModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STUDENT INFO MODAL ── -->
+    <div id="student-modal">
+        <div class="sm-card">
+            <div class="sm-header">
+                <div>
+                    <h2 id="sm-name">—</h2>
+                    <p id="sm-subtitle">—</p>
+                </div>
+                <button class="sm-close" onclick="closeStudentModal()">✕</button>
+            </div>
+            <div class="sm-body">
+
+                <p class="sm-section-label">Student Details</p>
+                <div class="sm-grid">
+                    <div class="sm-field">
+                        <div class="lbl">Roll Number</div>
+                        <div class="val highlight" id="sm-roll">—</div>
+                    </div>
+                    <div class="sm-field">
+                        <div class="lbl">Class & Division</div>
+                        <div class="val" id="sm-class">—</div>
+                    </div>
+                    <div class="sm-field">
+                        <div class="lbl">Email</div>
+                        <div class="val" id="sm-email" style="font-size:13px; word-break:break-all;">—</div>
+                    </div>
+                    <div class="sm-field">
+                        <div class="lbl">Mobile</div>
+                        <div class="val" id="sm-mobile">—</div>
+                    </div>
+                    <div class="sm-field">
+                        <div class="lbl">Registered On</div>
+                        <div class="val" id="sm-reg-date" style="font-size:13px;">—</div>
+                    </div>
+                    <div class="sm-field">
+                        <div class="lbl">Token #</div>
+                        <div class="val highlight" id="sm-token">—</div>
+                    </div>
+                </div>
+
+                <hr class="sm-divider">
+                <p class="sm-section-label">Application Request</p>
+                <div class="sm-req-box">
+                    <div class="req-row">
+                        <span class="k">Purpose</span>
+                        <span class="v" id="sm-purpose">—</span>
+                    </div>
+                    <div class="req-row">
+                        <span class="k">Academic Year</span>
+                        <span class="v" id="sm-year">—</span>
+                    </div>
+                    <div class="req-row">
+                        <span class="k">Applied On</span>
+                        <span class="v" id="sm-applied">—</span>
+                    </div>
+                    <div class="req-row">
+                        <span class="k">Status</span>
+                        <span class="v" id="sm-status">—</span>
+                    </div>
+                </div>
+
+                <!-- ── VERIFICATION CHECKLIST ── -->
+                <div class="verify-panel" id="verify-panel">
+                    <div class="vp-title">🔍 Admin Verification Checklist</div>
+                    <div id="verify-checks">
+                        <div class="check-row"><span class="check-icon">⏳</span><span class="check-text">Loading
+                                verification data…</span></div>
+                    </div>
+                    <div class="hist-row" id="verify-hist" style="display:none;">
+                        <div class="hist-chip approved">
+                            <div id="vh-approved">0</div>
+                            <div style="font-size:10px;font-weight:500;">Approved</div>
+                        </div>
+                        <div class="hist-chip rejected">
+                            <div id="vh-rejected">0</div>
+                            <div style="font-size:10px;font-weight:500;">Rejected</div>
+                        </div>
+                        <div class="hist-chip pending">
+                            <div id="vh-pending">0</div>
+                            <div style="font-size:10px;font-weight:500;">Other Pending</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons (hidden in view-only mode) -->
+                <div class="sm-actions" id="sm-actions">
+                    <button class="sm-btn-approve" id="sm-approve-btn" onclick="modalApprove()">✓ Approve & Send
+                        Certificate</button>
+                    <button class="sm-btn-reject" id="sm-reject-btn" onclick="modalReject()">✕ Reject</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 TKIET Warananangar · Admin Control Panel
+    </div>
+
+    <script>
+        const BASE_URL = "http://localhost:8080";
+        let selectedTokenId = null;
+
+        // ── Stats ──
+        async function loadStats() {
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/stats`);
+                if (!resp.ok) throw new Error('Stats fetch failed');
+                const stats = await resp.json();
+                document.getElementById('stat-pending').innerText = stats.pending ?? 0;
+                document.getElementById('stat-approved').innerText = stats.approvedToday ?? 0;
+                document.getElementById('stat-rejected').innerText = stats.rejectedToday ?? 0;
+            } catch (e) {
+                console.error('loadStats error:', e);
+            }
+        }
+
+        // ── Pending applications ──
+        async function loadApplications() {
+            const list = document.getElementById('pending-list');
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/applications`);
+                if (!resp.ok) throw new Error('Failed to load applications');
+                const apps = await resp.json();
+
+
+                if (!apps.length) {
+                    list.innerHTML = '<p class="empty-msg">No pending applications.</p>';
+                    return;
+                }
+
+                list.innerHTML = apps.map(app => {
+                    // Priority badge
+                    const score = app.priorityScore || 4;
+                    const priorityMap = {
+                        1: { cls: 'priority-1', label: '🔴 High (Passport/Visa)' },
+                        2: { cls: 'priority-2', label: '🟡 Medium (Scholarship)' },
+                        3: { cls: 'priority-3', label: '🔵 Normal (Bank)' },
+                        4: { cls: 'priority-4', label: '⚪ Low (Other)' }
+                    };
+                    const { cls, label } = priorityMap[score] || priorityMap[4];
+                    const vtag = `<span class="vtag vtag-new" id="vtag-${app.id}">🆕 New</span>`;
+                    return `
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; gap:12px; align-items:center; padding:15px; border-bottom:1px solid #eee;">
+                    <div>
+                        <strong style="display:block; cursor:pointer; color:#1a237e; text-decoration:underline; text-underline-offset:3px;"
+                                onclick="openStudentModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">
+                            ${escHtml(app.student.name)}
+                        </strong>
                         <span style="font-size:12px; color:#666;">
                             Roll: ${escHtml(app.student.rollNumber)} · ${escHtml(app.student.className)}-${escHtml(app.student.division)}
                         </span>
+                        <span style="display:block;margin-top:3px;">${vtag}</span>
                     </div>
                     <div style="font-size:13px; color:#444;">${escHtml(app.purpose)}</div>
-                    <div style="font-size:12px; color:#888;">${new Date(app.createdAt).toLocaleDateString()}</div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-approve" onclick="approveApp(${app.id}, '${escHtml(app.academicYear)}')">Approve</button>
-                        <button class="btn-reject"  onclick="openRejectModal(${app.id})">Reject</button>
+                    <div><span class="priority-badge ${cls}">${label}</span></div>
+                    <div style="font-size:12px; color:#888;">${new Date(app.createdAt).toLocaleDateString('en-IN')}<br><span style="font-size:11px;">${new Date(app.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-approve" onclick="approveApp(${app.id}, '${escHtml(app.academicYear)}')">✓ Approve</button>
+                        <button class="btn-reject"  onclick="openRejectModal(${app.id})">✕ Reject</button>
                     </div>
                 </div>
-            `).join('');
-        } catch (e) {
-            list.innerHTML = `<p class="empty-msg" style="color:#dc3545;">Error loading applications: ${e.message}</p>`;
-        }
-    }
+            `;
+                }).join('');
 
-    // FIX #4: Load approved applications from the new backend endpoint
-    async function loadApprovedApplications() {
-        const list = document.getElementById('approved-list');
-        list.innerHTML = '<p class="empty-msg">Loading…</p>';
-        try {
-            const resp = await fetch(`${BASE_URL}/api/admin/applications/approved`);
-            if (!resp.ok) throw new Error('Failed to load approved applications');
-            const apps = await resp.json();
-
-            if (!apps.length) {
-                list.innerHTML = '<p class="empty-msg">No approved applications yet.</p>';
-                return;
+                // Async-fetch verify data for each row to upgrade the tag
+                apps.forEach(app => updateRowTag(app.id));
+            } catch (e) {
+                list.innerHTML = `<p class="empty-msg" style="color:#dc3545;">Error loading applications: ${e.message}</p>`;
             }
+        }
 
-            list.innerHTML = apps.map(app => `
+        // FIX #4: Load approved applications from the new backend endpoint
+        async function loadApprovedApplications() {
+            const list = document.getElementById('approved-list');
+            list.innerHTML = '<p class="empty-msg">Loading…</p>';
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/applications/approved`);
+                if (!resp.ok) throw new Error('Failed to load approved applications');
+                const apps = await resp.json();
+
+                if (!apps.length) {
+                    list.innerHTML = '<p class="empty-msg">No approved applications yet.</p>';
+                    return;
+                }
+
+                list.innerHTML = apps.map(app => `
                 <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:15px; align-items:center; padding:15px; border-bottom:1px solid #eee;">
                     <div>
-                        <strong style="display:block;">${escHtml(app.student.name)}</strong>
+                        <strong style="display:block; cursor:pointer; color:#1a237e; text-decoration:underline; text-underline-offset:3px;"
+                                onclick="openStudentModal(${JSON.stringify(app).replace(/"/g, '&quot;')}, true)">
+                            ${escHtml(app.student.name)}
+                        </strong>
                         <span style="font-size:12px; color:#666;">
                             Roll: ${escHtml(app.student.rollNumber)} · ${escHtml(app.student.className)}-${escHtml(app.student.division)}
                         </span>
@@ -199,96 +1255,404 @@
                     </div>
                 </div>
             `).join('');
-        } catch (e) {
-            list.innerHTML = `<p class="empty-msg" style="color:#dc3545;">Error loading approved applications: ${e.message}</p>`;
-        }
-    }
-
-    // ── Approve ──
-    async function approveApp(id, year) {
-        if (!confirm('Approve and send certificate to student?')) return;
-        try {
-            const resp = await fetch(`${BASE_URL}/api/admin/approve?tokenId=${id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ academicYear: year || '2025-2026' })
-            });
-            const data = await resp.json();
-            if (resp.ok) {
-                alert('✅ Approved successfully! Certificate sent via email.');
-                loadApplications();
-                loadStats();
-            } else {
-                alert('❌ ' + (data.message || 'Approval failed.'));
+            } catch (e) {
+                list.innerHTML = `<p class="empty-msg" style="color:#dc3545;">Error loading approved applications: ${e.message}</p>`;
             }
-        } catch (e) {
-            alert('❌ Network error: ' + e.message);
         }
-    }
 
-    // ── Reject modal ──
-    function openRejectModal(id) {
-        selectedTokenId = id;
-        document.getElementById('reject-reason').value = '';
-        document.getElementById('reject-modal').classList.remove('hidden');
-    }
-
-    function closeRejectModal() {
-        document.getElementById('reject-modal').classList.add('hidden');
-        selectedTokenId = null;
-    }
-
-    async function confirmReject() {
-        const reason = document.getElementById('reject-reason').value.trim();
-        if (!reason) { alert('Please enter a rejection reason.'); return; }
-
-        try {
-            const resp = await fetch(`${BASE_URL}/api/admin/reject?tokenId=${selectedTokenId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason })
-            });
-            const data = await resp.json();
-            if (resp.ok) {
-                alert('Application rejected and student notified.');
-                closeRejectModal();
-                loadApplications();
-                loadStats();
-            } else {
-                alert('❌ ' + (data.message || 'Rejection failed.'));
+        // ── Approve ──
+        async function approveApp(id, year) {
+            if (!confirm('Approve and send certificate to student?')) return;
+            closeStudentModal();
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/approve?tokenId=${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ academicYear: year || '2025-2026' })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert('✅ Approved successfully! Certificate sent via email.');
+                    loadApplications();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (data.message || 'Approval failed.'));
+                }
+            } catch (e) {
+                alert('❌ Network error: ' + e.message);
             }
-        } catch (e) {
-            alert('❌ Network error: ' + e.message);
         }
-    }
 
-    // ── Tab switching (FIX #4: loads approved data when switching) ──
-    function switchTab(tab) {
-        document.getElementById('tab-pending').classList.toggle('active',  tab === 'pending');
-        document.getElementById('tab-approved').classList.toggle('active', tab === 'approved');
-        document.getElementById('pending-section').classList.toggle('hidden',  tab !== 'pending');
-        document.getElementById('approved-section').classList.toggle('hidden', tab !== 'approved');
+        // ── Student Info Modal ──
+        let _modalTokenId = null;
+        let _modalYear = null;
 
-        if (tab === 'approved') {
-            loadApprovedApplications(); // ← FIX: actually fetch data now
+        function openStudentModal(app, viewOnly = false) {
+            if (typeof app === 'string') app = JSON.parse(app);
+            const s = app.student;
+            _modalTokenId = app.id;
+            _modalYear = app.academicYear;
+
+            // Fill header
+            document.getElementById('sm-name').textContent = s.name || '—';
+            document.getElementById('sm-subtitle').textContent = `${s.className || ''} · Division ${s.division || ''} · Roll ${s.rollNumber || ''}`;
+
+            // Fill student fields
+            document.getElementById('sm-roll').textContent = s.rollNumber || '—';
+            document.getElementById('sm-class').textContent = `${s.className || '—'} · Div ${s.division || '—'}`;
+            document.getElementById('sm-email').textContent = s.email || 'Not provided';
+            document.getElementById('sm-mobile').textContent = s.mobile || 'Not provided';
+            document.getElementById('sm-token').textContent = '#' + (app.tokenNumber || '—');
+            document.getElementById('sm-reg-date').textContent = s.createdAt
+                ? new Date(s.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '—';
+
+            // Fill request fields
+            document.getElementById('sm-purpose').textContent = app.purpose || '—';
+            document.getElementById('sm-year').textContent = app.academicYear || '—';
+            document.getElementById('sm-applied').textContent = app.createdAt
+                ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+                : '—';
+
+            // Status badge
+            const statusMap = {
+                PENDING: ['pending', 'PENDING ⏳'],
+                APPROVED: ['approved', 'APPROVED ✅'],
+                REJECTED: ['rejected', 'REJECTED ❌'],
+            };
+            const [stCls, stLabel] = statusMap[app.status] || ['pending', app.status];
+            document.getElementById('sm-status').innerHTML = `<span class="sm-tag ${stCls}">${stLabel}</span>`;
+
+            // Show/hide action buttons
+            document.getElementById('sm-actions').style.display = viewOnly ? 'none' : 'flex';
+
+            // Reset & load verification checklist
+            document.getElementById('verify-checks').innerHTML =
+                '<div class="check-row"><span class="check-icon">⏳</span><span class="check-text">Loading verification data…</span></div>';
+            document.getElementById('verify-hist').style.display = 'none';
+            document.getElementById('verify-panel').style.display = viewOnly ? 'none' : 'block';
+
+            if (!viewOnly) loadVerifyData(app.id, s);
+
+            document.getElementById('student-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
         }
-    }
 
-    // ── XSS guard ──
-    function escHtml(str) {
-        if (str == null) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
+        // ── Load verify data from backend ──
+        async function loadVerifyData(tokenId, student) {
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/verify/${tokenId}`);
+                if (!resp.ok) throw new Error('Verify fetch failed');
+                const v = await resp.json();
 
-    // ── Initial load ──
-    loadStats();
-    loadApplications();
-    setInterval(() => { loadStats(); loadApplications(); }, 15000);
-</script>
+                const checks = [];
+
+                // 0. SOURCE CHECK — most important: is this data from official records?
+                const isOfficial = v.source === 'ADMIN_UPLOADED';
+                const sourceHtml = isOfficial
+                    ? `<div class="src-alert success">
+                            <div class="src-icon">🛡️</div>
+                            <div class="src-body">
+                                <div class="src-title">Verified College Student — Data from Official Records</div>
+                                <div class="src-sub">This student was loaded from the admin-uploaded college Excel. Name, class, division and email are from institutional records and can be trusted.</div>
+                            </div>
+                       </div>`
+                    : `<div class="src-alert danger">
+                            <div class="src-icon">⚠️</div>
+                            <div class="src-body">
+                                <div class="src-title">UNVERIFIED — Student Self-Registered (Not in Official List)</div>
+                                <div class="src-sub">This student typed their own name, class, division and email. Admin has NOT uploaded this roll number from official records. Cross-check with physical ID card before approving.</div>
+                            </div>
+                       </div>`;
+
+                document.getElementById('verify-checks').insertAdjacentHTML('beforebegin', sourceHtml);
+
+                // 1. Roll number
+                checks.push({ icon: '✅', cls: 'chk-ok', text: `Roll number <strong>${escHtml(v.rollNumber)}</strong> is registered in the system`, sub: 'OTP was delivered → roll number is valid' });
+
+                // 2. Class name
+                const classOk = v.className && v.className.trim().length > 0;
+                checks.push({
+                    icon: classOk ? '✅' : '⚠️', cls: classOk ? 'chk-ok' : 'chk-warn',
+                    text: classOk ? `Class: <strong>${escHtml(v.className)}</strong>` : 'Class name is empty — verify manually',
+                    sub: classOk ? 'Provided at registration' : 'Student may have skipped class during registration'
+                });
+
+                // 3. Division
+                const divOk = v.division && v.division.trim().length > 0;
+                checks.push({
+                    icon: divOk ? '✅' : '⚠️', cls: divOk ? 'chk-ok' : 'chk-warn',
+                    text: divOk ? `Division: <strong>${escHtml(v.division)}</strong>` : 'Division not provided — verify against records',
+                    sub: ''
+                });
+
+                // 4. Email / contact
+                const emailOk = v.email && v.email.includes('@');
+                checks.push({
+                    icon: emailOk ? '✅' : '⚠️', cls: emailOk ? 'chk-ok' : 'chk-warn',
+                    text: emailOk ? `Email on record: <strong>${escHtml(v.email)}</strong>` : 'Email missing or invalid',
+                    sub: 'OTP was sent to this email — student has confirmed access'
+                });
+
+                // 5. First-time vs repeat
+                if (v.isFirstTimeApplicant) {
+                    checks.push({ icon: '🆕', cls: 'chk-warn', text: 'First-time applicant — no previous history', sub: 'Verify physical documents more carefully' });
+                } else {
+                    checks.push({ icon: '🟢', cls: 'chk-ok', text: `Returning applicant — ${v.totalHistory} previous application(s) on record`, sub: '' });
+                }
+
+                // 6. Duplicate pending
+                if (v.hasDuplicatePending) {
+                    checks.push({ icon: '🔴', cls: 'chk-bad', text: 'Another PENDING application for the same purpose already exists!', sub: 'Consider rejecting as Duplicate Application' });
+                } else {
+                    checks.push({ icon: '✅', cls: 'chk-ok', text: 'No duplicate pending application for this purpose', sub: '' });
+                }
+
+                // 7. Already approved same purpose+year
+                if (v.alreadyApprovedSamePurpose) {
+                    checks.push({ icon: '🔴', cls: 'chk-bad', text: 'Certificate for same purpose + academic year was already issued!', sub: 'Reject as Duplicate — certificate already issued' });
+                } else {
+                    checks.push({ icon: '✅', cls: 'chk-ok', text: 'No prior certificate issued for this purpose and year', sub: '' });
+                }
+
+                document.getElementById('verify-checks').innerHTML = checks.map(c => `
+                    <div class="check-row">
+                        <span class="check-icon ${c.cls}">${c.icon}</span>
+                        <div>
+                            <div class="check-text">${c.text}</div>
+                            ${c.sub ? `<div class="check-sub">${c.sub}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                // History counters
+                document.getElementById('vh-approved').textContent = v.approvedCount;
+                document.getElementById('vh-rejected').textContent = v.rejectedCount;
+                document.getElementById('vh-pending').textContent = v.pendingCount;
+                document.getElementById('verify-hist').style.display = 'flex';
+
+                // Update row tag if visible
+                updateRowTagFromData(tokenId, v);
+
+            } catch (e) {
+                document.getElementById('verify-checks').innerHTML =
+                    `<div class="check-row"><span class="check-icon">⚠️</span><span class="check-text" style="color:#dc3545;">Could not load verification data: ${escHtml(e.message)}</span></div>`;
+            }
+        }
+
+        // ── Row tag helpers ──
+        async function updateRowTag(tokenId) {
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/verify/${tokenId}`);
+                if (!resp.ok) return;
+                const v = await resp.json();
+                updateRowTagFromData(tokenId, v);
+            } catch (_) { }
+        }
+
+        function updateRowTagFromData(tokenId, v) {
+            const el = document.getElementById('vtag-' + tokenId);
+            if (!el) return;
+            if (v.hasDuplicatePending || v.alreadyApprovedSamePurpose) {
+                el.className = 'vtag vtag-repeated';
+                el.textContent = '🔴 Repeated';
+            } else if (!v.isFirstTimeApplicant) {
+                el.className = 'vtag vtag-verified';
+                el.textContent = '🟢 Verified';
+            } else {
+                el.className = 'vtag vtag-new';
+                el.textContent = '🆕 New Student';
+            }
+        }
+
+        function closeStudentModal() {
+            document.getElementById('student-modal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // Click outside modal to close
+        document.getElementById('student-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeStudentModal();
+        });
+
+        async function modalApprove() {
+            if (!_modalTokenId) return;
+            if (!confirm('Approve this application and send certificate to student?')) return;
+            closeStudentModal();
+            await approveApp(_modalTokenId, _modalYear);
+        }
+
+        function modalReject() {
+            if (!_modalTokenId) return;
+            closeStudentModal();
+            openRejectModal(_modalTokenId);
+        }
+
+        // ── Reject modal ──
+        function selectReason(label) {
+            document.querySelectorAll('.reason-item').forEach(el => el.classList.remove('selected'));
+            label.classList.add('selected');
+            label.querySelector('input[type=radio]').checked = true;
+        }
+
+        function openRejectModal(id) {
+            selectedTokenId = id;
+            // Reset selections
+            document.querySelectorAll('.reason-item').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('input[name=rej-reason]').forEach(r => r.checked = false);
+            document.getElementById('reject-notes').value = '';
+            document.getElementById('reject-modal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('reject-modal').classList.add('hidden');
+            selectedTokenId = null;
+        }
+
+        async function confirmReject() {
+            const selected = document.querySelector('input[name=rej-reason]:checked');
+            if (!selected) { alert('Please select a rejection reason.'); return; }
+
+            const baseReason = selected.value;
+            const notes = document.getElementById('reject-notes').value.trim();
+            const reason = notes ? `${baseReason} — ${notes}` : baseReason;
+
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/reject?tokenId=${selectedTokenId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert(`✅ Application rejected.\nReason sent to student: "${reason}"`);
+                    closeRejectModal();
+                    loadApplications();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (data.message || 'Rejection failed.'));
+                }
+            } catch (e) {
+                alert('❌ Network error: ' + e.message);
+            }
+        }
+
+        // ── Tab switching ──
+        function switchTab(tab) {
+            ['pending', 'approved', 'fees'].forEach(t => {
+                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+            });
+            document.getElementById('pending-section').classList.toggle('hidden', tab !== 'pending');
+            document.getElementById('approved-section').classList.toggle('hidden', tab !== 'approved');
+            document.getElementById('fees-section').classList.toggle('hidden', tab !== 'fees');
+
+            if (tab === 'approved') loadApprovedApplications();
+        }
+
+        // ── Fee Upload ──
+        let selectedFeeFile = null;
+
+        function onFileSelected(input) {
+            const file = input.files[0];
+            if (!file) return;
+            selectedFeeFile = file;
+            const zone = document.getElementById('drop-zone');
+            const label = document.getElementById('drop-label');
+            zone.classList.add('has-file');
+            label.innerHTML = `<span class="file-name">📄 ${escHtml(file.name)}</span><br><span style="font-size:12px; color:#555;">${(file.size / 1024).toFixed(1)} KB — Ready to upload</span>`;
+            document.getElementById('btn-upload-fees').disabled = false;
+            document.getElementById('upload-result').style.display = 'none';
+        }
+
+        // Drag & drop support
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#007bff'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.xlsx')) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('fee-file-input').files = dt.files;
+                onFileSelected(document.getElementById('fee-file-input'));
+            } else {
+                alert('Please drop a valid .xlsx file.');
+            }
+        });
+
+        async function uploadFees() {
+            if (!selectedFeeFile) { alert('Please select a file first.'); return; }
+            const btn = document.getElementById('btn-upload-fees');
+            const result = document.getElementById('upload-result');
+            btn.disabled = true;
+            btn.textContent = '⏳ Uploading…';
+            result.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', selectedFeeFile);
+
+            try {
+                const resp = await fetch(`${BASE_URL}/api/admin/upload-fees`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const text = await resp.text();
+                result.style.display = 'block';
+                if (resp.ok) {
+                    result.className = 'upload-result success';
+                    result.innerHTML = '✅ ' + escHtml(text);
+                    // Reset file input
+                    selectedFeeFile = null;
+                    document.getElementById('fee-file-input').value = '';
+                    document.getElementById('drop-zone').classList.remove('has-file');
+                    document.getElementById('drop-label').innerHTML = 'Click here or drag & drop your <strong>.xlsx</strong> file';
+                    btn.disabled = true;
+                } else {
+                    result.className = 'upload-result error';
+                    result.innerHTML = '❌ ' + escHtml(text);
+                }
+            } catch (e) {
+                result.style.display = 'block';
+                result.className = 'upload-result error';
+                result.innerHTML = '❌ Network error: ' + escHtml(e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📤 Upload & Process';
+            }
+        }
+
+        // ── Download blank template ──
+        function downloadTemplate() {
+            // Build a CSV that Excel can open as a template
+            const header = 'Roll Number,Academic Year,Semester,Total Fees,Minimum Due,Amount Paid';
+            const sample = '2201234,2025-2026,3,75000,37500,0';
+            const blob = new Blob([header + '\n' + sample], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fee_upload_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ── XSS guard ──
+        function escHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // ── Initial load ──
+        loadStats();
+        loadApplications();
+        setInterval(() => { loadStats(); loadApplications(); }, 15000);
+    </script>
 
 </body>
+
 </html>

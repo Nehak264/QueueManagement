@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -146,6 +148,24 @@ public class StudentController {
     public ResponseEntity<?> apply(
             @RequestBody Map<String, String> body) {
 
+        // ── DATE/TIME CONSTRAINT (backend layer — cannot be bypassed) ──
+        // 🚧 TESTING MODE: constraints commented out — re-enable before production
+        // LocalDateTime now = LocalDateTime.now();
+        // DayOfWeek day = now.getDayOfWeek();
+        // int hour = now.getHour();
+
+        // if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+        //     return ResponseEntity.badRequest()
+        //             .body(Map.of("message",
+        //                     "Applications can only be submitted on weekdays (Monday–Friday). The office is closed on weekends."));
+        // }
+        // if (hour < 9 || hour >= 17) {
+        //     return ResponseEntity.badRequest()
+        //             .body(Map.of("message",
+        //                     "Applications can only be submitted between 9:00 AM and 5:00 PM college hours."));
+        // }
+
+        // ── REQUIRED FIELD VALIDATION ──
         String rollNumber = body.get("rollNumber");
         String purpose = body.get("purpose");
         String academicYear = body.get("academicYear");
@@ -185,11 +205,20 @@ public class StudentController {
                     ));
         }
 
+        // ── PRIORITY SCORE (urgency-based queue ordering) ──
+        int priorityScore = switch (purpose) {
+            case "Passport Application", "Visa Application" -> 1;  // Most urgent — government docs
+            case "Scholarship Form"                          -> 2;  // External deadline
+            case "Bank Account Opening"                     -> 3;  // Important but flexible
+            default                                         -> 4;  // Other
+        };
+
         Token token = new Token();
         token.setStudent(student);
         token.setPurpose(purpose);
         token.setAcademicYear(academicYear);
         token.setStatus(TokenStatus.PENDING);
+        token.setPriorityScore(priorityScore);
 
         int dailyCount = tokenService.getTodayTokenCount();
         token.setTokenNumber(dailyCount + 1);
@@ -238,13 +267,14 @@ public class StudentController {
                             "Name is required."));
         }
 
+        // Format: 23UGCS22047 → 2-digit year + "UG" + 2-letter dept + 5-digit sequence
         if (student.getRollNumber() == null ||
-                !student.getRollNumber().matches("\\d{7}")) {
+                !student.getRollNumber().matches("\\d{2}UG[A-Z]{2}\\d{5}")) {
 
             return ResponseEntity.badRequest()
                     .body(Map.of(
                             "message",
-                            "Roll number must be exactly 7 digits."
+                            "Invalid roll number format. Expected format: 23UGCS22047 (year + UG + dept + 5-digit no.)"
                     ));
         }
 
@@ -280,6 +310,10 @@ public class StudentController {
                             "Student with this roll number already exists!"
                     ));
         }
+
+        // Always stamp SELF_REGISTERED — frontend never sends this field,
+        // and Jackson can bypass the Java field initializer on deserialization.
+        student.setSource("SELF_REGISTERED");
 
         Student saved = studentRepository.save(student);
 

@@ -31,8 +31,12 @@ public class TokenService {
                 .orElseThrow(() -> new RuntimeException("Token not found"));
     }
 
+    /**
+     * Returns PENDING tokens sorted by priority score (ASC) then submission time (ASC).
+     * Admin always sees the most urgent applications first.
+     */
     public List<Token> getPendingTokens() {
-        return tokenRepository.findByStatus(TokenStatus.PENDING);
+        return tokenRepository.findPendingTokensSorted();
     }
 
     // FIX #4 — for Admin "Approved Archive" tab
